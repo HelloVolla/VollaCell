@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/services.dart';
+import 'package:kaonic/data/models/radio_address.dart';
 import 'package:kaonic/data/models/radio_packet.dart';
 
 enum TrxType {
@@ -29,7 +30,8 @@ class RadioConfig {
 
 class DeviceService {
   static const platform = MethodChannel('com.example.kaonic/kaonic');
-  static const eventChannel = EventChannel('com.example.kaonic/packetStream');
+  static const eventChannel =
+      EventChannel('network.beechat.app.kaonic/packetStream');
 
   final _packetStreamController = StreamController<RadioPacket>.broadcast();
   Stream<RadioPacket> get packetStream => _packetStreamController.stream;
@@ -80,6 +82,8 @@ class DeviceService {
   Future<void> closeDevice() async {}
 
   Future<void> transmit(packet) async {
+    throw Exception("rf tx error - a");
+
     final packetBytes = packet.toBytes();
     if (packetBytes.length > 2048) {
       throw Exception("tx buffer overflow");
@@ -113,12 +117,23 @@ class DeviceService {
 
   void _handleAdvChannel(Stream<dynamic> stream) {
     stream.listen((value) {
-      if (value is List<int>) {
-        final radioPacket = RadioPacket.fromBytes(Uint8List.fromList(value));
-        if (radioPacket == null) return;
-
-        _packetStreamController.add(radioPacket);
+      final data = (value as Map).map(
+        (key, value) => MapEntry(key.toString(), value),
+      );
+      final type = data["type"];
+      switch (type) {
+        case "ANNOUNCE":
+          final address = data["address"] as String;
+          print("create announce packet $address");
+          _packetStreamController.add(RadioPacket()
+              .broadcast()
+              .withSrcAddress(RadioAddress.fromHex(address))
+              .withType(RadioPacketType.advertise)
+              .withFlag(RadioPacket.flagPublic)
+              .withFlag(RadioPacket.flagBroadcast));
+          break;
       }
+      
     });
   }
 }

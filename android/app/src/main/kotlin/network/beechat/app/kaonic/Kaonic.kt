@@ -1,11 +1,16 @@
 package network.beechat.app.kaonic
 
 import android.content.Context
+import android.os.Handler
+import android.os.Looper
 import androidx.annotation.Keep
 import android.util.Log
+import io.flutter.plugin.common.EventChannel
 
 class Kaonic(context: Context) {
     private val nativePtr: Long
+
+    var eventSink: EventChannel.EventSink? = null
 
     init {
         nativePtr = nativeInit(context)
@@ -28,6 +33,13 @@ class Kaonic(context: Context) {
     @Keep
     fun announce(identity: String, address: String) {
         Log.d("Kaonic", "Found Identity: " + address)
+
+        Handler(Looper.getMainLooper()).post {
+            val resultData: HashMap<String, Any> = HashMap()
+            resultData["type"] = "ANNOUNCE"
+            resultData["address"] = address
+            eventSink?.success(resultData)
+        }
     }
 
     private external fun nativeInit(context: Context): Long

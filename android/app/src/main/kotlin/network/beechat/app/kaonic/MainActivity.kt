@@ -20,6 +20,7 @@ class MainActivity : FlutterActivity() {
     private val rxBuffer = ByteArray(2048)
 
     private val CHANNEL_EVENT = "com.example.kaonic/audioStream"
+    private val KAONIC_EVENT = "network.beechat.app.kaonic/packetStream"
     private var eventSink: EventChannel.EventSink? = null
     private var androidAudio: AndroidAudio? = null
 
@@ -121,7 +122,6 @@ class MainActivity : FlutterActivity() {
                 object : EventChannel.StreamHandler {
                     override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
                         androidAudio?.eventSink = events
-
                     }
 
                     override fun onCancel(arguments: Any?) {
@@ -129,7 +129,19 @@ class MainActivity : FlutterActivity() {
                     }
                 }
             )
-        
+
+        EventChannel(flutterEngine?.dartExecutor?.binaryMessenger, KAONIC_EVENT)
+            .setStreamHandler(
+                object : EventChannel.StreamHandler {
+                    override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
+                        kaonic.eventSink = events
+                    }
+
+                    override fun onCancel(arguments: Any?) {
+                        kaonic.eventSink = null
+                    }
+                }
+            )
     }
 
     private fun enumerateDevices(): ArrayList<String> {

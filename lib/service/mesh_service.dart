@@ -209,10 +209,8 @@ class MeshService {
       _chats.value[address]?.unreadMessagesCount = 0;
 
   Future<void> _handleAdvertisePacket(RadioPacket packet) async {
-    final publicKey =
-        SimplePublicKey(packet.payload(), type: KeyPairType.x25519);
-
-    final address = await MeshAddress.fromPublicKey(publicKey);
+   
+    final address =  MeshAddress.fromRadio(packet.srcAddress);
 
     final addressHex = address.toHex();
     final isNewMessage = !_nodes.value.containsKey(addressHex);
@@ -220,10 +218,8 @@ class MeshService {
     Map<String, MeshNode> updatedNodes = {}..addAll(_nodes.value);
 
     if (isNewMessage) {
-      final secretKey = await X25519()
-          .sharedSecretKey(keyPair: _keyPair, remotePublicKey: publicKey);
-
-      updatedNodes[addressHex] = MeshNode(address, publicKey, secretKey);
+     
+      updatedNodes[addressHex] = MeshNode(address);
 
       // ignore: avoid_print
       print("mesh: new node discovered $addressHex");
@@ -336,6 +332,9 @@ class MeshService {
   }
 
   Future<void> handlePacket(RadioPacket packet) async {
+
+      print("// new packet //");
+
     if (!packet.dstAddress.isEmpty() && !packet.dstAddress.equals(_address)) {
       // Filter packets not addressed to us
       return;
@@ -358,11 +357,11 @@ class MeshService {
     if (node == null ||
         node.sequence != packet.sequence ||
         packet.sequence == 0) {
-      if (packet.hasFlag(RadioPacket.flagPrivate)) {
-        if (node != null && clearPayload.isNotEmpty) {
-          clearPayload = await node.decrypt(packet.payload());
-        }
-      }
+      // if (packet.hasFlag(RadioPacket.flagPrivate)) {
+      //   if (node != null && clearPayload.isNotEmpty) {
+      //     clearPayload = await node.decrypt(packet.payload());
+      //   }
+      // }
 
       if (packet.sequence != 0) {
         node?.sequence = packet.sequence;
