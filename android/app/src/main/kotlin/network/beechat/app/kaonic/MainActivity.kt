@@ -30,11 +30,6 @@ class MainActivity : FlutterActivity() {
     external fun kaonicTransmit(data: ByteArray): Int
     external fun kaonicReceive(data: ByteArray, timeout: Int): Int
 
-    external fun kaonicConfigure(rfIndex: Int, freq: Int, channel: Int, spacing: Int): Int
-
-    external fun codec2Encode(input: ByteArray): ByteArray
-    external fun codec2Decode(input: ByteArray): ByteArray
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -73,14 +68,6 @@ class MainActivity : FlutterActivity() {
                     result.success(true)
                 }
 
-                "codecEncode" -> {
-                    result.success(codec2Encode(call.argument<ByteArray>("data")!!))
-                }
-
-                "codecDecode" -> {
-                    result.success(codec2Decode(call.argument<ByteArray>("data")!!))
-                }
-
                 "kaonicTransmit" -> {
                     val data = call.argument<ByteArray>("data")
                     val rc = kaonicTransmit(
@@ -99,18 +86,6 @@ class MainActivity : FlutterActivity() {
                     resultData["count"] = rc
                     resultData["data"] = this.rxBuffer
                     result.success(resultData)
-                }
-
-                "kaonicConfigure" -> {
-
-                    val rc = kaonicConfigure(
-                        call.argument<Int>("rfIndex")!!,
-                        call.argument<Int>("freq")!!,
-                        call.argument<Int>("channel")!!,
-                        call.argument<Int>("spacing")!!
-                    )
-
-                    result.success(rc)
                 }
                 "startAudio"->{
                     androidAudio?.startPlaying()

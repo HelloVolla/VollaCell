@@ -81,8 +81,6 @@ pub extern "system" fn Java_network_beechat_app_kaonic_Kaonic_nativeStart(
     ptr: jlong,
     identity: JString,
 ) {
-
-
     // Safety: ptr must be a valid pointer created by nativeInit
     let state = unsafe { &*(ptr as *const KaonicState) };
 
@@ -95,12 +93,10 @@ pub extern "system" fn Java_network_beechat_app_kaonic_Kaonic_nativeStart(
         }
     };
 
-    log::debug!("parse id  {}", identity_hex);
-
     // Convert hex string into PrivateIdentity
     match PrivateIdentity::new_from_hex_string(&identity_hex) {
         Ok(identity) => {
-            log::debug!("start reticulum for {}", identity.address_hash());
+            log::debug!("start reticulum for identity {}", identity.address_hash());
 
             state
                 .runtime
@@ -130,8 +126,7 @@ async fn reticulum_task(identity: PrivateIdentity, mut cmd_rx: broadcast::Receiv
     let destination_list = KaonicDestinationList {
         contact: transport
             .add_destination(identity.clone(), DestinationName::new("kaonic", "contact")),
-        chat: transport
-            .add_destination(identity.clone(), DestinationName::new("kaonic", "chat")),
+        chat: transport.add_destination(identity.clone(), DestinationName::new("kaonic", "chat")),
     };
 
     let _client = KaonicGrpcInterface::start(
@@ -144,10 +139,15 @@ async fn reticulum_task(identity: PrivateIdentity, mut cmd_rx: broadcast::Receiv
 
     let mut announce_interval = tokio::time::interval(Duration::from_secs(10));
 
+    let mut announces = transport.recv_announces();
     loop {
         tokio::select! {
             cmd = cmd_rx.recv() => {
                 // TODO:
+            }
+            Ok(out_destination) = announces.recv() => {
+                let destination = out_destination.lock().unwrap();
+                log::trace!("found {}", destination.desc.address_hash);
             }
             _ = announce_interval.tick() => {
                 log::trace!("announce");
