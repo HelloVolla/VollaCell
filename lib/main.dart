@@ -7,8 +7,10 @@ import 'package:kaonic/data/repository/storage.dart';
 import 'package:kaonic/data/repository/user_repository.dart';
 import 'package:kaonic/generated/l10n.dart';
 import 'package:kaonic/routes.dart';
+import 'package:kaonic/service/communication_service.dart';
 import 'package:kaonic/service/device_service.dart';
 import 'package:kaonic/service/user_service.dart';
+import 'package:kaonic/src/find_nearby/find_nearby_screen.dart';
 import 'package:kaonic/src/home/home_screen.dart';
 import 'package:kaonic/src/login/login_screen.dart';
 import 'package:kaonic/src/passcode/passcode_screen.dart';
@@ -58,6 +60,7 @@ class _MainAppState extends State<MainApp> {
                       UserRepository(storageService: _storageService),
                   ),
             ),
+            RepositoryProvider(create: (context) => CommunicationService(deviceService: _deviceService)),
           ],
           child: MaterialApp(
               debugShowCheckedModeBanner: false,
@@ -79,6 +82,7 @@ class _MainAppState extends State<MainApp> {
                           as UserModel,
                     ),
                 Routes.home: (context) => const HomeScreen(),
+                Routes.findNearby: (context) => const FindNearbyScreen(),
               }),
         ));
   }

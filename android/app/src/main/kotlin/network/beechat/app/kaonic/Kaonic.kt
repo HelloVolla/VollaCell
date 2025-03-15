@@ -1,6 +1,8 @@
 package network.beechat.app.kaonic
 
 import android.content.Context
+import androidx.annotation.Keep
+import android.util.Log
 
 class Kaonic(context: Context) {
     private val nativePtr: Long
@@ -21,6 +23,11 @@ class Kaonic(context: Context) {
 
     public fun start(identity: String) {
         return nativeStart(nativePtr, identity)
+    }
+
+    @Keep
+    fun announce(identity: String, address: String) {
+        Log.d("Kaonic", "Found Identity: " + address)
     }
 
     private external fun nativeInit(context: Context): Long

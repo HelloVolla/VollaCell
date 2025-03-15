@@ -77,18 +77,6 @@ class DeviceService {
 
   Future<void> closeDevice() async {}
 
-  Future<Uint8List> codecEncode(Uint8List data) async {
-    return await platform.invokeMethod('codecEncode', {
-      "data": data,
-    });
-  }
-
-  Future<Uint8List> codecDecode(Uint8List data) async {
-    return await platform.invokeMethod('codecDecode', {
-      "data": data,
-    });
-  }
-
   Future<void> transmit(packet) async {
     final packetBytes = packet.toBytes();
     if (packetBytes.length > 2048) {
