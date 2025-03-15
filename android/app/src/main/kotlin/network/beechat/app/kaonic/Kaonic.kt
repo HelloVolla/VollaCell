@@ -19,6 +19,10 @@ class Kaonic(context: Context) {
         return nativeGenerateIdentity(nativePtr)
     }
 
+    public fun start(identity: String): void {
+        return nativeStart(nativePtr, identity)
+    }
+
     private external fun nativeInit(context: Context): Long
     private external fun nativeDestroy(ptr: Long)
     private external fun nativeStart(ptr: Long, identity: String)
