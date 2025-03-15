@@ -38,10 +38,10 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   }
 
   FutureOr<void> _initEvent(_InitEvent event, Emitter<HomeState> emit) {
+    _deviceService.startUser(_userService.user?.key ?? '');
     _userSubscription = _userService.watchCurrentUser()?.listen((user) {
       final newUser = user.findFirst();
       if (newUser == null) return;
-      _deviceService.startUser(newUser.key);
       add(_UpdatedUser(user: newUser));
     });
   }
