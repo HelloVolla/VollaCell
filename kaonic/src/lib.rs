@@ -1,5 +1,5 @@
-use jni::objects::{GlobalRef, JClass, JObject};
-use jni::sys::jlong;
+use jni::objects::{GlobalRef, JClass, JObject, JString};
+use jni::sys::{jlong, jstring};
 use jni::JNIEnv;
 use rand_core::OsRng;
 use reticulum::destination::{DestinationName, SingleInputDestination};
@@ -10,6 +10,7 @@ use reticulum::transport::Transport;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use tokio::runtime::Runtime;
+use tokio::sync::broadcast;
 use tokio::sync::mpsc::UnboundedReceiver;
 
 use android_log;
@@ -21,11 +22,14 @@ struct KaonicDestinationList {
 
 struct KaonicState {
     context: GlobalRef,
-    cmd_tx: tokio::sync::mpsc::UnboundedSender<KaonicCommand>,
+    cmd_tx: tokio::sync::broadcast::Sender<KaonicCommand>,
     runtime: Arc<Runtime>,
 }
 
-enum KaonicCommand {}
+#[derive(Copy, Clone)]
+enum KaonicCommand {
+    Stop,
+}
 
 #[no_mangle]
 pub extern "system" fn Java_network_beechat_app_kaonic_Kaonic_libraryInit(env: JNIEnv) {
@@ -43,7 +47,7 @@ pub extern "system" fn Java_network_beechat_app_kaonic_Kaonic_nativeInit(
         .new_global_ref(context)
         .expect("Failed to create global ref");
 
-    let (cmd_tx, cmd_rx) = tokio::sync::mpsc::unbounded_channel::<KaonicCommand>();
+    let (cmd_tx, _) = tokio::sync::broadcast::channel::<KaonicCommand>(32);
 
     let runtime = Arc::new(Runtime::new().expect("Failed to create Tokio runtime"));
 
@@ -52,8 +56,6 @@ pub extern "system" fn Java_network_beechat_app_kaonic_Kaonic_nativeInit(
         cmd_tx,
         runtime,
     });
-
-    state.runtime.spawn(reticulum_task(cmd_rx));
 
     Box::into_raw(state) as jlong
 }
@@ -73,20 +75,50 @@ pub extern "system" fn Java_network_beechat_app_kaonic_Kaonic_nativeDestroy(
 
 #[no_mangle]
 pub extern "system" fn Java_network_beechat_app_kaonic_Kaonic_nativeStart(
-    _env: JNIEnv,
+    mut env: JNIEnv,
     _class: JClass,
     ptr: jlong,
+    identity: JString,
 ) {
     // Safety: ptr must be a valid pointer created by nativeInit
     let state = unsafe { &*(ptr as *const KaonicState) };
-    
+
+    // Convert JString to Rust String
+    let identity_hex: String = match env.get_string(&identity) {
+        Ok(jstr) => jstr.into(),
+        Err(_) => {
+            eprintln!("Failed to convert JString to Rust String");
+            return;
+        }
+    };
+
+    // Convert hex string into PrivateIdentity
+    match PrivateIdentity::new_from_hex_string(&identity_hex) {
+        Ok(identity) => {
+            log::debug!("start reticulum for {}", identity.address_hash());
+
+            state
+                .runtime
+                .spawn(reticulum_task(identity, state.cmd_tx.subscribe()));
+        }
+        Err(_) => log::error!("can't create private identity"),
+    }
 }
 
+#[no_mangle]
+pub extern "system" fn Java_network_beechat_app_kaonic_Kaonic_nativeGenerateIdentity(
+    env: JNIEnv,
+    _class: JClass,
+    _ptr: jlong,
+) -> jstring {
+    // Generate new identity
+    let identity = PrivateIdentity::new_from_rand(OsRng);
 
-async fn reticulum_task(mut cmd_rx: UnboundedReceiver<KaonicCommand>) {
+    env.new_string(identity.to_hex_string()).unwrap().into_raw()
+}
+
+async fn reticulum_task(identity: PrivateIdentity, mut cmd_rx: broadcast::Receiver<KaonicCommand>) {
     log::info!("start reticulum task");
-
-    let identity = PrivateIdentity::new_from_name("test");
 
     let mut transport = Transport::new();
 
@@ -111,7 +143,8 @@ async fn reticulum_task(mut cmd_rx: UnboundedReceiver<KaonicCommand>) {
                 // TODO:
             }
             _ = announce_interval.tick() => {
-                let _ = transport.announce(&destination_list.contact.lock().unwrap(), None);
+                log::trace!("announce");
+                transport.announce(&destination_list.contact.lock().unwrap(), None).unwrap();
             }
         };
     }

@@ -15,10 +15,15 @@ class Kaonic(context: Context) {
         }
     }
 
+    public fun generateIdentity(): String {
+        return nativeGenerateIdentity(nativePtr)
+    }
+
     private external fun nativeInit(context: Context): Long
     private external fun nativeDestroy(ptr: Long)
-    private external fun nativeStart(ptr: Long)
+    private external fun nativeStart(ptr: Long, identity: String)
     private external fun nativeStop(ptr: Long)
+    private external fun nativeGenerateIdentity(ptr: Long): String
 
     companion object {
         init {

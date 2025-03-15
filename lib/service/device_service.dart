@@ -37,7 +37,7 @@ class DeviceService {
   Timer? _searchDevicesTimer;
 
   DeviceService() {
-    _enumerateDevices();
+    // _enumerateDevices();
   }
 
   Future<void> _openDevice(String deviceName) async {
@@ -47,11 +47,11 @@ class DeviceService {
       if (opened) {
         configure(RadioConfig());
       } else {
-        _enumerateDevices();
+        //_enumerateDevices();
       }
     } on PlatformException catch (e) {
       print("Failed to call write: '${e.message}'");
-      _enumerateDevices();
+     // _enumerateDevices();
     }
   }
 
@@ -105,14 +105,14 @@ class DeviceService {
 
   void _enumerateDevices() {
     _searchDevicesTimer?.cancel();
-    _searchDevicesTimer =
-        Timer.periodic(const Duration(seconds: 1), (timer) async {
-      final devices = await platform.invokeMethod('enumerateDevices');
-
-      if (devices is List<dynamic> && devices.isNotEmpty) {
-        _openDevice(devices.first);
-        timer.cancel();
-      }
-    });
+    // _searchDevicesTimer =
+    //     Timer.periodic(const Duration(seconds: 1), (timer) async {
+    //   final devices = await platform.invokeMethod('enumerateDevices');
+    //
+    //   if (devices is List<dynamic> && devices.isNotEmpty) {
+    //     _openDevice(devices.first);
+    //     timer.cancel();
+    //   }
+    // });
   }
 }
