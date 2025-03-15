@@ -8,7 +8,7 @@ class UserModel {
   UserModel({
     required this.username,
     required this.passcode,
-    this.key = const [],
+    this.key = '',
     required this.id,
     this.logged = false,
   });
@@ -17,7 +17,7 @@ class UserModel {
   final String username;
   final String passcode;
   final bool logged;
-  List<int> key;
+  String key;
   final contacts = ToMany<ContactModel>();
 
   UserModel copyWith({

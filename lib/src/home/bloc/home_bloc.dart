@@ -17,6 +17,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     required UserService userService,
     required DeviceService deviceService,
   })  : _userService = userService,
+        _deviceService = deviceService,
         // _communicationService = communicationService,
         super(HomeState(user: userService.user)) {
     on<_InitEvent>(_initEvent);
@@ -24,11 +25,11 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
     add(_InitEvent());
 
-    if (userService.user != null) {
-    }
+    if (userService.user != null) {}
   }
 
   final UserService _userService;
+  final DeviceService _deviceService;
   late final StreamSubscription<Query<UserModel>>? _userSubscription;
   @override
   close() async {
@@ -40,7 +41,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     _userSubscription = _userService.watchCurrentUser()?.listen((user) {
       final newUser = user.findFirst();
       if (newUser == null) return;
-
+      _deviceService.startUser(newUser.key);
       add(_UpdatedUser(user: newUser));
     });
   }

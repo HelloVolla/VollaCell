@@ -68,7 +68,7 @@ final _entities = <obx_int.ModelEntity>[
         obx_int.ModelProperty(
             id: const obx_int.IdUid(7, 3034203895016704663),
             name: 'key',
-            type: 27,
+            type: 9,
             flags: 0)
       ],
       relations: <obx_int.ModelRelation>[
@@ -167,7 +167,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
         objectToFB: (UserModel object, fb.Builder fbb) {
           final usernameOffset = fbb.writeString(object.username);
           final passcodeOffset = fbb.writeString(object.passcode);
-          final keyOffset = fbb.writeListInt64(object.key);
+          final keyOffset = fbb.writeString(object.key);
           fbb.startTable(8);
           fbb.addInt64(0, object.id);
           fbb.addOffset(1, usernameOffset);
@@ -184,9 +184,8 @@ obx_int.ModelDefinition getObjectBoxModel() {
               .vTableGet(buffer, rootOffset, 6, '');
           final passcodeParam = const fb.StringReader(asciiOptimization: true)
               .vTableGet(buffer, rootOffset, 8, '');
-          final keyParam =
-              const fb.ListReader<int>(fb.Int64Reader(), lazy: false)
-                  .vTableGet(buffer, rootOffset, 16, []);
+          final keyParam = const fb.StringReader(asciiOptimization: true)
+              .vTableGet(buffer, rootOffset, 16, '');
           final idParam =
               const fb.Int64Reader().vTableGet(buffer, rootOffset, 4, 0);
           final loggedParam =
@@ -237,7 +236,7 @@ class UserModel_ {
 
   /// See [UserModel.key].
   static final key =
-      obx.QueryIntegerVectorProperty<UserModel>(_entities[1].properties[4]);
+      obx.QueryStringProperty<UserModel>(_entities[1].properties[4]);
 
   /// see [UserModel.contacts]
   static final contacts = obx.QueryRelationToMany<UserModel, ContactModel>(

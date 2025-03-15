@@ -130,6 +130,13 @@ class MainActivity : FlutterActivity() {
                 "generateKey"->{
                     result.success(kaonic.generateIdentity())
                 }
+                "userStart"->{
+                    val key = call.argument<String>("key")
+                    key?.let{
+                        kaonic.start(key)
+                    }
+                    result.success(0)
+                }
             }
         }
 

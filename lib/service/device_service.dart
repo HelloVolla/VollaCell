@@ -29,7 +29,6 @@ class RadioConfig {
 class DeviceService {
   static const platform = MethodChannel('com.example.kaonic/kaonic');
 
-
   var _config = RadioConfig();
   var _txCounter = 0;
   var _rxCounter = 0;
@@ -51,8 +50,12 @@ class DeviceService {
       }
     } on PlatformException catch (e) {
       print("Failed to call write: '${e.message}'");
-     // _enumerateDevices();
+      // _enumerateDevices();
     }
+  }
+
+  void startUser(String userKey) {
+    platform.invokeMethod('userStart', {"key": userKey});
   }
 
   Future<void> configure(RadioConfig config) async {
@@ -82,7 +85,7 @@ class DeviceService {
     });
   }
 
-  Future<void> transmit( packet) async {
+  Future<void> transmit(packet) async {
     final packetBytes = packet.toBytes();
     if (packetBytes.length > 2048) {
       throw Exception("tx buffer overflow");
@@ -99,9 +102,7 @@ class DeviceService {
     }
   }
 
-  void _startReceive() {
-    
-  }
+  void _startReceive() {}
 
   void _enumerateDevices() {
     _searchDevicesTimer?.cancel();

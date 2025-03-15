@@ -22,9 +22,9 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
   }
 
   FutureOr<void> _handleUserLogin(LoginUser event, Emitter<LoginState> emit) {
-    final response = _userService.loginUser(event.username, event.passcode);
+    final responseUser = _userService.loginUser(event.username, event.passcode);
 
-    if (response == null) {
+    if (responseUser == null) {
       emit(LoginFailure());
     } else {
       emit(LoginSuccess());
