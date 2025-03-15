@@ -9,7 +9,7 @@ plugins {
 
 android {
     namespace = "network.beechat.app.kaonic"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 34
     ndkVersion = flutter.ndkVersion
 
     compileOptions {

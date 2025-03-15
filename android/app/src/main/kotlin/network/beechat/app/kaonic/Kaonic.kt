@@ -17,6 +17,8 @@ class Kaonic(context: Context) {
 
     private external fun nativeInit(context: Context): Long
     private external fun nativeDestroy(ptr: Long)
+    private external fun nativeStart(ptr: Long)
+    private external fun nativeStop(ptr: Long)
 
     companion object {
         init {
