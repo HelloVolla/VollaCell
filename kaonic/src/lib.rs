@@ -1,4 +1,4 @@
-use jni::objects::{GlobalRef, JClass, JMethodID, JObject, JString};
+use jni::objects::{GlobalRef, JByteArray, JClass, JMethodID, JObject, JString};
 use jni::sys::{jlong, jmethodID, jstring};
 use jni::{signature, JNIEnv, JavaVM};
 use rand_core::OsRng;
@@ -138,6 +138,25 @@ pub extern "system" fn Java_network_beechat_app_kaonic_Kaonic_nativeGenerateIden
     env.new_string(identity.to_hex_string()).unwrap().into_raw()
 }
 
+#[no_mangle]
+pub extern "system" fn Java_network_beechat_app_kaonic_Kaonic_nativeTransmit(
+    mut env: JNIEnv,
+    _class: JClass,
+    ptr: jlong,
+    address: JString,
+    payload: JByteArray,
+) {
+    let addr: String = match env.get_string(&address) {
+        Ok(jstr) => jstr.into(),
+        Err(_) => "".into(),
+    };
+
+    let payload_vec: Vec<u8> = match env.convert_byte_array(payload) {
+        Ok(bytes) => bytes,
+        Err(_) => "".into(),
+    };
+}
+
 async fn reticulum_task(
     identity: PrivateIdentity,
     mut cmd_rx: broadcast::Receiver<KaonicCommand>,
@@ -189,15 +208,13 @@ async fn reticulum_task(
 
                     let identity = env
                     .new_string(destination.identity.to_hex_string())
-                    .expect("Couldn't create java string!");
+                    .unwrap();
 
                     let address = env
                     .new_string(destination.identity.address_hash.to_hex_string())
-                    .expect("Couldn't create java string!");
-
+                    .unwrap();
 
                     env.call_method(&obj, "announce", "(Ljava/lang/String;Ljava/lang/String;)V", &[(&identity).into(),(&address).into()]).unwrap();
-
                 }
                 _ = announce_interval.tick() => {
                     transport.announce(&destination_list.contact.lock().unwrap(), None).unwrap();

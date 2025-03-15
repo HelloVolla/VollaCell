@@ -30,6 +30,12 @@ class Kaonic(context: Context) {
         return nativeStart(nativePtr, identity)
     }
 
+
+    public fun kaonicTransmit(address: String, data: ByteArray) {
+        nativeTransmit(nativePtr, address, data);
+    }
+
+
     @Keep
     fun announce(identity: String, address: String) {
         Log.d("Kaonic", "Found Identity: " + address)
@@ -47,6 +53,7 @@ class Kaonic(context: Context) {
     private external fun nativeStart(ptr: Long, identity: String)
     private external fun nativeStop(ptr: Long)
     private external fun nativeGenerateIdentity(ptr: Long): String
+    private external fun nativeTransmit(ptr: Long, address: String, payload: ByteArray): String
 
     companion object {
         init {
