@@ -233,8 +233,6 @@ class MeshService {
 
   Future<void> handlePacket(RadioPacket packet) async {
 
-      print("// new packet //");
-
     if (!packet.dstAddress.isEmpty() && !packet.dstAddress.equals(_address)) {
       // Filter packets not addressed to us
       return;
@@ -302,6 +300,7 @@ class MeshService {
   }
 
   Future<void> advertise() async {
+    return;
     final advertisePacket = RadioPacket()
         .broadcast()
         .withSrcAddress(_address)

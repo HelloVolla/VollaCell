@@ -2,7 +2,7 @@ use jni::objects::{GlobalRef, JByteArray, JClass, JMethodID, JObject, JString};
 use jni::sys::{jlong, jmethodID, jstring};
 use jni::{signature, JNIEnv, JavaVM};
 use rand_core::OsRng;
-use reticulum::destination::link::Link;
+use reticulum::destination::link::{Link, LinkPayload};
 use reticulum::destination::{DestinationName, SingleInputDestination};
 use reticulum::hash::AddressHash;
 use reticulum::identity::{Identity, PrivateIdentity};
@@ -31,14 +31,15 @@ struct KaonicState {
     runtime: Arc<Runtime>,
 }
 
-#[derive(Copy, Clone)]
-struct Message {
+#[derive(Clone)]
+struct KaonicMessage {
     address_hash: AddressHash,
+    payload: LinkPayload,
 }
 
-#[derive(Copy, Clone)]
+#[derive(Clone)]
 enum KaonicCommand {
-    Message,
+    Message(KaonicMessage),
 }
 
 #[no_mangle]
@@ -141,20 +142,31 @@ pub extern "system" fn Java_network_beechat_app_kaonic_Kaonic_nativeGenerateIden
 #[no_mangle]
 pub extern "system" fn Java_network_beechat_app_kaonic_Kaonic_nativeTransmit(
     mut env: JNIEnv,
-    _class: JClass,
+    _obj: JObject,
     ptr: jlong,
     address: JString,
     payload: JByteArray,
 ) {
+    let state = unsafe { &*(ptr as *const KaonicState) };
+
     let addr: String = match env.get_string(&address) {
         Ok(jstr) => jstr.into(),
         Err(_) => "".into(),
     };
 
+    log::debug!("addr {}", addr);
+
+    let addr = AddressHash::new_from_hex_string(&addr).unwrap();
+
     let payload_vec: Vec<u8> = match env.convert_byte_array(payload) {
         Ok(bytes) => bytes,
         Err(_) => "".into(),
     };
+
+    state.cmd_tx.send(KaonicCommand::Message(KaonicMessage {
+        address_hash: addr,
+        payload: LinkPayload::new_from_vec(&payload_vec),
+    }));
 }
 
 async fn reticulum_task(
@@ -191,8 +203,19 @@ async fn reticulum_task(
             tokio::select! {
                 Ok(cmd) = cmd_rx.recv() => {
                     match cmd {
-                        KaonicCommand::Message => {
-
+                        KaonicCommand::Message(msg) => {
+                            log::trace!("kaonic: send message");
+                            let link = transport.find_out_link(msg.address_hash);
+                            if let Some(link) = link {
+                                let link = link.lock().unwrap();
+                                if let Ok(packet) = link.data_packet(msg.payload.as_slice()) {
+                                    let _ = transport.send(packet);
+                                } else {
+                                    log::error!("kaonic: link data packet error");
+                                }
+                            } else {
+                                log::error!("kaonic: link for {} not found", msg.address_hash);
+                            }
                         }
                     }
                 }
@@ -200,7 +223,7 @@ async fn reticulum_task(
                     let destination = out_destination.lock().unwrap();
                     // TODO: check if destination is compatible
                     // Start link
-                    let link = transport.link(destination.desc);
+                    let _link = transport.link(destination.desc);
 
                     let mut env = jvm
                         .attach_current_thread()
@@ -211,7 +234,7 @@ async fn reticulum_task(
                     .unwrap();
 
                     let address = env
-                    .new_string(destination.identity.address_hash.to_hex_string())
+                    .new_string(destination.desc.address_hash.to_hex_string())
                     .unwrap();
 
                     env.call_method(&obj, "announce", "(Ljava/lang/String;Ljava/lang/String;)V", &[(&identity).into(),(&address).into()]).unwrap();

@@ -81,8 +81,7 @@ class DeviceService {
 
   Future<void> closeDevice() async {}
 
-  Future<void> transmit(packet) async {
-    throw Exception("rf tx error - a");
+  Future<void> transmit(RadioPacket packet) async {
 
     final packetBytes = packet.toBytes();
     if (packetBytes.length > 2048) {
@@ -90,6 +89,7 @@ class DeviceService {
     }
 
     final rc = await platform.invokeMethod('kaonicTransmit', {
+      "address": packet.dstAddress.toHex(),
       "data": packetBytes,
     });
 
@@ -102,18 +102,18 @@ class DeviceService {
 
   void _startReceive() {}
 
-  void _enumerateDevices() {
-    _searchDevicesTimer?.cancel();
-    // _searchDevicesTimer =
-    //     Timer.periodic(const Duration(seconds: 1), (timer) async {
-    //   final devices = await platform.invokeMethod('enumerateDevices');
-    //
-    //   if (devices is List<dynamic> && devices.isNotEmpty) {
-    //     _openDevice(devices.first);
-    //     timer.cancel();
-    //   }
-    // });
-  }
+  // void _enumerateDevices() {
+  //   _searchDevicesTimer?.cancel();
+  //   // _searchDevicesTimer =
+  //   //     Timer.periodic(const Duration(seconds: 1), (timer) async {
+  //   //   final devices = await platform.invokeMethod('enumerateDevices');
+  //   //
+  //   //   if (devices is List<dynamic> && devices.isNotEmpty) {
+  //   //     _openDevice(devices.first);
+  //   //     timer.cancel();
+  //   //   }
+  //   // });
+  // }
 
   void _handleAdvChannel(Stream<dynamic> stream) {
     stream.listen((value) {

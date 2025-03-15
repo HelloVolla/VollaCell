@@ -24,13 +24,6 @@ class MainActivity : FlutterActivity() {
     private var eventSink: EventChannel.EventSink? = null
     private var androidAudio: AndroidAudio? = null
 
-    external fun initKaonicLib(context: Context)
-    external fun openKaonicDevice()
-    external fun closeKaonicDevice()
-
-    external fun kaonicTransmit(data: ByteArray): Int
-    external fun kaonicReceive(data: ByteArray, timeout: Int): Int
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -63,31 +56,18 @@ class MainActivity : FlutterActivity() {
                 }
 
                 "closeDevice" -> {
-                    closeKaonicDevice();
                     closeSerial();
 
                     result.success(true)
                 }
 
                 "kaonicTransmit" -> {
+                    val address = call.argument<String>("address")
                     val data = call.argument<ByteArray>("data")
-                    val rc = kaonicTransmit(
-                        data!!
-                    )
-                    result.success(rc)
+                    kaonic.transmit(address!!, data!!)
+                    result.success(0)
                 }
 
-                "kaonicReceive" -> {
-                    val rc = kaonicReceive(
-                        this.rxBuffer,
-                        call.argument<Int>("timeout")!!
-                    )
-
-                    val resultData: HashMap<String, Any> = HashMap()
-                    resultData["count"] = rc
-                    resultData["data"] = this.rxBuffer
-                    result.success(resultData)
-                }
                 "startAudio"->{
                     androidAudio?.startPlaying()
                     androidAudio?.startRecording()
@@ -150,12 +130,10 @@ class MainActivity : FlutterActivity() {
 
     fun openSerial(deviceName: String): Boolean {
         val opened = serial!!.open(deviceName)
-        openKaonicDevice()
         return opened
     }
 
     fun closeSerial() {
-        closeKaonicDevice()
         serial!!.close()
     }
 
