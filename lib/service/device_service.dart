@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/services.dart';
+import 'package:kaonic/data/models/radio_packet.dart';
 
 enum TrxType {
   rf_09(0),
@@ -28,6 +29,9 @@ class RadioConfig {
 
 class DeviceService {
   static const platform = MethodChannel('com.example.kaonic/kaonic');
+  
+  final _packetStreamController = StreamController<RadioPacket>.broadcast();
+  Stream<RadioPacket> get packetStream => _packetStreamController.stream;
 
   var _config = RadioConfig();
   var _txCounter = 0;
