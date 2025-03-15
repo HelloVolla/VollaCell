@@ -65,7 +65,7 @@ class SaveBackupScreen extends StatelessWidget {
                             text: _user.username),
                         FutureBuilder(
                           future: MeshAddress.fromPublicKey(SimplePublicKey(
-                              _user.publicKey,
+                              _user.key,
                               type: KeyPairType.x25519)),
                           builder: (context, snapshot) => Padding(
                             padding: EdgeInsets.symmetric(vertical: 10.h),

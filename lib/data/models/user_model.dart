@@ -8,8 +8,7 @@ class UserModel {
   UserModel({
     required this.username,
     required this.passcode,
-    this.privateKey = const [],
-    this.publicKey = const [],
+    this.key = const [],
     required this.id,
     this.logged = false,
   });
@@ -18,8 +17,7 @@ class UserModel {
   final String username;
   final String passcode;
   final bool logged;
-  List<int> privateKey;
-  List<int> publicKey;
+  List<int> key;
   final contacts = ToMany<ContactModel>();
 
   UserModel copyWith({
@@ -31,8 +29,7 @@ class UserModel {
         username: username ?? this.username,
         passcode: passcode ?? this.passcode,
         logged: logged ?? this.logged,
-        privateKey: privateKey,
-        publicKey: publicKey,
+        key: key,
         id: id);
   }
 }

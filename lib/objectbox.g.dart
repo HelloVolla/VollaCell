@@ -42,7 +42,7 @@ final _entities = <obx_int.ModelEntity>[
   obx_int.ModelEntity(
       id: const obx_int.IdUid(2, 122111734487620448),
       name: 'UserModel',
-      lastPropertyId: const obx_int.IdUid(6, 5720481686052608034),
+      lastPropertyId: const obx_int.IdUid(7, 3034203895016704663),
       flags: 0,
       properties: <obx_int.ModelProperty>[
         obx_int.ModelProperty(
@@ -66,13 +66,8 @@ final _entities = <obx_int.ModelEntity>[
             type: 1,
             flags: 0),
         obx_int.ModelProperty(
-            id: const obx_int.IdUid(5, 8826984033369877482),
-            name: 'privateKey',
-            type: 27,
-            flags: 0),
-        obx_int.ModelProperty(
-            id: const obx_int.IdUid(6, 5720481686052608034),
-            name: 'publicKey',
+            id: const obx_int.IdUid(7, 3034203895016704663),
+            name: 'key',
             type: 27,
             flags: 0)
       ],
@@ -126,7 +121,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
       lastSequenceId: const obx_int.IdUid(0, 0),
       retiredEntityUids: const [],
       retiredIndexUids: const [],
-      retiredPropertyUids: const [],
+      retiredPropertyUids: const [8826984033369877482, 5720481686052608034],
       retiredRelationUids: const [],
       modelVersion: 5,
       modelVersionParserMinimum: 5,
@@ -172,15 +167,13 @@ obx_int.ModelDefinition getObjectBoxModel() {
         objectToFB: (UserModel object, fb.Builder fbb) {
           final usernameOffset = fbb.writeString(object.username);
           final passcodeOffset = fbb.writeString(object.passcode);
-          final privateKeyOffset = fbb.writeListInt64(object.privateKey);
-          final publicKeyOffset = fbb.writeListInt64(object.publicKey);
-          fbb.startTable(7);
+          final keyOffset = fbb.writeListInt64(object.key);
+          fbb.startTable(8);
           fbb.addInt64(0, object.id);
           fbb.addOffset(1, usernameOffset);
           fbb.addOffset(2, passcodeOffset);
           fbb.addBool(3, object.logged);
-          fbb.addOffset(4, privateKeyOffset);
-          fbb.addOffset(5, publicKeyOffset);
+          fbb.addOffset(6, keyOffset);
           fbb.finish(fbb.endTable());
           return object.id;
         },
@@ -191,12 +184,9 @@ obx_int.ModelDefinition getObjectBoxModel() {
               .vTableGet(buffer, rootOffset, 6, '');
           final passcodeParam = const fb.StringReader(asciiOptimization: true)
               .vTableGet(buffer, rootOffset, 8, '');
-          final privateKeyParam =
+          final keyParam =
               const fb.ListReader<int>(fb.Int64Reader(), lazy: false)
-                  .vTableGet(buffer, rootOffset, 12, []);
-          final publicKeyParam =
-              const fb.ListReader<int>(fb.Int64Reader(), lazy: false)
-                  .vTableGet(buffer, rootOffset, 14, []);
+                  .vTableGet(buffer, rootOffset, 16, []);
           final idParam =
               const fb.Int64Reader().vTableGet(buffer, rootOffset, 4, 0);
           final loggedParam =
@@ -204,8 +194,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
           final object = UserModel(
               username: usernameParam,
               passcode: passcodeParam,
-              privateKey: privateKeyParam,
-              publicKey: publicKeyParam,
+              key: keyParam,
               id: idParam,
               logged: loggedParam);
           obx_int.InternalToManyAccess.setRelInfo<UserModel>(object.contacts,
@@ -246,13 +235,9 @@ class UserModel_ {
   static final logged =
       obx.QueryBooleanProperty<UserModel>(_entities[1].properties[3]);
 
-  /// See [UserModel.privateKey].
-  static final privateKey =
+  /// See [UserModel.key].
+  static final key =
       obx.QueryIntegerVectorProperty<UserModel>(_entities[1].properties[4]);
-
-  /// See [UserModel.publicKey].
-  static final publicKey =
-      obx.QueryIntegerVectorProperty<UserModel>(_entities[1].properties[5]);
 
   /// see [UserModel.contacts]
   static final contacts = obx.QueryRelationToMany<UserModel, ContactModel>(

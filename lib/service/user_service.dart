@@ -15,12 +15,8 @@ class UserService {
   UserModel? _user;
   UserModel? get user => _user;
 
-  Future<UserModel?> signUpUser(String username, String passcode) async{
+  Future<UserModel?> signUpUser(String username, String passcode) async {
     _user = _userRepository.createUser(username, passcode);
-    final userKeys = await _cryptoUtils.generateKeys();
-
-    _user?.privateKey = userKeys.privateKey;
-    _user?.publicKey = userKeys.publicKey;
 
     _userRepository.updateUser(_user!);
 

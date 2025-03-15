@@ -24,7 +24,7 @@
     },
     {
       "id": "2:122111734487620448",
-      "lastPropertyId": "6:5720481686052608034",
+      "lastPropertyId": "7:3034203895016704663",
       "name": "UserModel",
       "properties": [
         {
@@ -49,13 +49,8 @@
           "type": 1
         },
         {
-          "id": "5:8826984033369877482",
-          "name": "privateKey",
-          "type": 27
-        },
-        {
-          "id": "6:5720481686052608034",
-          "name": "publicKey",
+          "id": "7:3034203895016704663",
+          "name": "key",
           "type": 27
         }
       ],
@@ -76,7 +71,10 @@
   "modelVersionParserMinimum": 5,
   "retiredEntityUids": [],
   "retiredIndexUids": [],
-  "retiredPropertyUids": [],
+  "retiredPropertyUids": [
+    8826984033369877482,
+    5720481686052608034
+  ],
   "retiredRelationUids": [],
   "version": 1
 }
