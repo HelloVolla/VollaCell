@@ -10,6 +10,8 @@ import 'package:kaonic/routes.dart';
 import 'package:kaonic/service/communication_service.dart';
 import 'package:kaonic/service/device_service.dart';
 import 'package:kaonic/service/user_service.dart';
+import 'package:kaonic/src/chat/chat_args.dart';
+import 'package:kaonic/src/chat/chat_screen.dart';
 import 'package:kaonic/src/find_nearby/find_nearby_screen.dart';
 import 'package:kaonic/src/home/home_screen.dart';
 import 'package:kaonic/src/login/login_screen.dart';
@@ -18,7 +20,6 @@ import 'package:kaonic/src/sign_up/save_backup_screen.dart';
 import 'package:kaonic/src/sign_up/sign_up_screen.dart';
 import 'package:kaonic/src/welcome_screen.dart';
 import 'package:kaonic/theme/theme.dart';
-import 'package:kaonic/utils/crypto_utils.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -83,6 +84,11 @@ class _MainAppState extends State<MainApp> {
                     ),
                 Routes.home: (context) => const HomeScreen(),
                 Routes.findNearby: (context) => const FindNearbyScreen(),
+                 Routes.chat: (context) => ChatScreen(
+                      args: ModalRoute.of(context)?.settings.arguments
+                          as ChatArgs,
+                    ),
+                // Routes.call: (context) => const CallScreen(),
               }),
         ));
   }

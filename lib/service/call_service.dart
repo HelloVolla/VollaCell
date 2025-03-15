@@ -10,6 +10,7 @@ import 'package:async/async.dart';
 import 'dart:async';
 
 import 'package:kaonic/data/models/mesh_address.dart';
+import 'package:kaonic/data/models/mesh_message.dart';
 import 'package:kaonic/data/models/radio_packet.dart';
 import 'package:kaonic/service/mesh_service.dart';
 

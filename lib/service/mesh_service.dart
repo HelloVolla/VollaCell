@@ -7,7 +7,10 @@ import 'dart:typed_data';
 
 import 'package:cryptography/cryptography.dart';
 import 'package:intl/intl.dart';
+import 'package:kaonic/data/models/meah_chat.dart';
 import 'package:kaonic/data/models/mesh_address.dart';
+import 'package:kaonic/data/models/mesh_call.dart';
+import 'package:kaonic/data/models/mesh_message.dart';
 import 'package:kaonic/data/models/mesh_node.dart';
 import 'package:kaonic/data/models/radio_address.dart';
 import 'package:kaonic/data/models/radio_packet.dart';
@@ -19,109 +22,6 @@ import 'package:rxdart/subjects.dart';
 abstract class MeshServiceExceptions implements Exception {}
 
 class MeshServiceUnknownNodeAddressException extends MeshServiceExceptions {}
-
-class MeshMessage {
-  MeshMessage({
-    required this.senderAddress,
-  });
-  final String senderAddress;
-}
-
-class MeshTextMessage extends MeshMessage {
-  MeshTextMessage({
-    required super.senderAddress,
-    required this.message,
-  });
-  factory MeshTextMessage.fromJsonString(String jsonStr) {
-    final map = jsonDecode(jsonStr);
-    if (map is Map<dynamic, dynamic> &&
-        map.containsKey('senderAddress') &&
-        map.containsKey('message')) {
-      return MeshTextMessage(
-          senderAddress: map['senderAddress'], message: map['message']);
-    }
-
-    return MeshTextMessage(senderAddress: '-', message: '-');
-  }
-  final String message;
-
-  String toJsonString() =>
-      jsonEncode({'senderAddress': senderAddress, 'message': message});
-}
-
-class MeshFileMessage extends MeshMessage {
-  MeshFileMessage(
-      {required super.senderAddress,
-      required this.fileName,
-      this.localPath,
-      this.bytes});
-  String? localPath;
-  final String fileName;
-  List<int>? bytes;
-}
-
-class MeshChat {
-  MeshChat({this.unreadMessagesCount = 0, this.messages = const []});
-
-  int unreadMessagesCount;
-  final List<MeshMessage> messages;
-}
-
-class MeshCall {
-  MeshCall({this.status = MeshCallStatuses.none, this.address});
-
-  final RadioAddress? address;
-  final MeshCallStatuses status;
-
-  MeshCall copyWith({
-    RadioAddress? address,
-    MeshCallStatuses? status,
-  }) =>
-      MeshCall(
-        address: address ?? this.address,
-        status: status ?? this.status,
-      );
-}
-
-enum MeshCallStatuses {
-  /// Base status
-  none,
-
-  /// Other user initiated call
-  ///
-  /// callInvoke received
-  incomingCall,
-
-  /// User initiated call
-  ///
-  /// callInvoke send
-  outcomeCall,
-
-  /// In call
-  ///
-  /// callAnswer received
-  inCall,
-
-  /// Call ended by sender or who initiated call
-  ///
-  /// callReject received or send
-  ended;
-
-  String getTitle([String? user]) => switch (this) {
-        incomingCall => '$user CALLING',
-        outcomeCall => 'CALLING...',
-        inCall => 'IN CALL WITH $user',
-        ended => 'CALL ENDED',
-        _ => ''
-      };
-}
-
-class MeshVoice {
-  final RadioAddress address;
-  final Uint8List data;
-
-  MeshVoice(this.address, this.data);
-}
 
 class MeshService {
   final DeviceService _deviceService;
