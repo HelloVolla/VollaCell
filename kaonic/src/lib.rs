@@ -18,6 +18,7 @@ use log;
 
 struct KaonicDestinationList {
     contact: Arc<Mutex<SingleInputDestination>>,
+    chat: Arc<Mutex<SingleInputDestination>>,
 }
 
 struct KaonicState {
@@ -125,6 +126,8 @@ async fn reticulum_task(identity: PrivateIdentity, mut cmd_rx: broadcast::Receiv
     let destination_list = KaonicDestinationList {
         contact: transport
             .add_destination(identity.clone(), DestinationName::new("kaonic", "contact")),
+        chat: transport
+            .add_destination(identity.clone(), DestinationName::new("kaonic", "chat")),
     };
 
     let _client = KaonicGrpcInterface::start(
