@@ -54,8 +54,8 @@ class DeviceService {
     }
   }
 
-  void startUser(String userKey) {
-    platform.invokeMethod('userStart', {"key": userKey});
+  void startUser(String userKey) async {
+    await platform.invokeMethod('userStart', {"key": userKey});
   }
 
   Future<void> configure(RadioConfig config) async {

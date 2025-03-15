@@ -19,7 +19,7 @@ class Kaonic(context: Context) {
         return nativeGenerateIdentity(nativePtr)
     }
 
-    public fun start(identity: String): void {
+    public fun start(identity: String) {
         return nativeStart(nativePtr, identity)
     }
 

@@ -56,7 +56,7 @@ class _MainAppState extends State<MainApp> {
               create: (context) => UserService(
                   userRepository:
                       UserRepository(storageService: _storageService),
-                  cryptoUtils: CryptoUtils()),
+                  ),
             ),
           ],
           child: MaterialApp(

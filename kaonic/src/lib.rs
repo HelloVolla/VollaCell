@@ -81,6 +81,8 @@ pub extern "system" fn Java_network_beechat_app_kaonic_Kaonic_nativeStart(
     ptr: jlong,
     identity: JString,
 ) {
+
+
     // Safety: ptr must be a valid pointer created by nativeInit
     let state = unsafe { &*(ptr as *const KaonicState) };
 
@@ -92,6 +94,8 @@ pub extern "system" fn Java_network_beechat_app_kaonic_Kaonic_nativeStart(
             return;
         }
     };
+
+    log::debug!("parse id  {}", identity_hex);
 
     // Convert hex string into PrivateIdentity
     match PrivateIdentity::new_from_hex_string(&identity_hex) {
