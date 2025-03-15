@@ -127,6 +127,9 @@ class MainActivity : FlutterActivity() {
                     androidAudio?.play(data,data?.size?:0)
                     result.success(0)
                 }
+                "generateKey"->{
+                    result.success(kaonic.generateIdentity())
+                }
             }
         }
 

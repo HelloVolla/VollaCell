@@ -27,7 +27,7 @@ class RadioConfig {
 }
 
 class DeviceService {
-  static const platform = MethodChannel('com.example.bz_app/kaonic');
+  static const platform = MethodChannel('com.example.kaonic/kaonic');
 
 
   var _config = RadioConfig();

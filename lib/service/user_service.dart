@@ -1,23 +1,20 @@
+import 'package:flutter/services.dart';
 import 'package:kaonic/data/models/user_model.dart';
 import 'package:kaonic/data/repository/user_repository.dart';
-import 'package:kaonic/utils/crypto_utils.dart';
 import 'package:objectbox/objectbox.dart';
 
 class UserService {
-  UserService(
-      {required UserRepository userRepository,
-      required CryptoUtils cryptoUtils})
-      : _userRepository = userRepository,
-        _cryptoUtils = cryptoUtils;
+  UserService({required UserRepository userRepository})
+      : _userRepository = userRepository;
 
   final UserRepository _userRepository;
-  final CryptoUtils _cryptoUtils;
+  static const platform = MethodChannel('com.example.kaonic/kaonic');
   UserModel? _user;
   UserModel? get user => _user;
 
   Future<UserModel?> signUpUser(String username, String passcode) async {
     _user = _userRepository.createUser(username, passcode);
-
+    _user?.key = await platform.invokeMethod("generateKey");
     _userRepository.updateUser(_user!);
 
     return user;
