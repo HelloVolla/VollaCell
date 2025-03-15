@@ -29,7 +29,8 @@ class RadioConfig {
 
 class DeviceService {
   static const platform = MethodChannel('com.example.kaonic/kaonic');
-  
+  static const eventChannel = EventChannel('com.example.kaonic/packetStream');
+
   final _packetStreamController = StreamController<RadioPacket>.broadcast();
   Stream<RadioPacket> get packetStream => _packetStreamController.stream;
 
@@ -40,6 +41,7 @@ class DeviceService {
   Timer? _searchDevicesTimer;
 
   DeviceService() {
+    _handleAdvChannel(eventChannel.receiveBroadcastStream());
     // _enumerateDevices();
   }
 
@@ -107,5 +109,16 @@ class DeviceService {
     //     timer.cancel();
     //   }
     // });
+  }
+
+  void _handleAdvChannel(Stream<dynamic> stream) {
+    stream.listen((value) {
+      if (value is List<int>) {
+        final radioPacket = RadioPacket.fromBytes(Uint8List.fromList(value));
+        if (radioPacket == null) return;
+
+        _packetStreamController.add(radioPacket);
+      }
+    });
   }
 }
