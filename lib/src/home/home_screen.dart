@@ -20,6 +20,7 @@ class HomeScreen extends StatelessWidget {
       create: (context) => HomeBloc(
         userService: context.read<UserService>(),
         deviceService: context.read(),
+        communicationService: context.read(),
       ),
       child: PopScope(
         canPop: false,

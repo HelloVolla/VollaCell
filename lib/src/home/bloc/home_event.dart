@@ -11,3 +11,9 @@ final class _UpdatedUser extends HomeEvent {
 
   final UserModel user;
 }
+
+final class _UpdatedNodes extends HomeEvent {
+  _UpdatedNodes({required this.nodes});
+
+  final Map<String, MeshNode> nodes;
+}
