@@ -15,8 +15,8 @@ import 'package:kaonic/data/models/radio_packet.dart';
 import 'package:kaonic/service/mesh_service.dart';
 
 class CallService {
-  static const eventChannel = EventChannel('com.example.bz_app/audioStream');
-  static const platform = MethodChannel('com.example.bz_app/kaonic');
+  static const eventChannel = EventChannel('com.example.kaonic/audioStream');
+  static const platform = MethodChannel('com.example.kaonic/kaonic');
   static const sampleRate = 4800;
   // static const Codec codec = Codec.pcm16;
   static const timeoutDuration = Duration(seconds: 10);
