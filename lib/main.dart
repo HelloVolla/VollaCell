@@ -10,6 +10,7 @@ import 'package:kaonic/routes.dart';
 import 'package:kaonic/service/communication_service.dart';
 import 'package:kaonic/service/device_service.dart';
 import 'package:kaonic/service/user_service.dart';
+import 'package:kaonic/src/call/call_screen.dart';
 import 'package:kaonic/src/chat/chat_args.dart';
 import 'package:kaonic/src/chat/chat_screen.dart';
 import 'package:kaonic/src/find_nearby/find_nearby_screen.dart';
@@ -88,7 +89,7 @@ class _MainAppState extends State<MainApp> {
                       args: ModalRoute.of(context)?.settings.arguments
                           as ChatArgs,
                     ),
-                // Routes.call: (context) => const CallScreen(),
+                Routes.call: (context) => const CallScreen(),
               }),
         ));
   }
