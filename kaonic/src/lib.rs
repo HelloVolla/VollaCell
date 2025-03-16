@@ -11,7 +11,7 @@ use reticulum::iface::kaonic::kaonic_grpc::KaonicGrpcInterface;
 use reticulum::transport::Transport;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
-use tokio::runtime::Runtime;
+use tokio::runtime::{self, Runtime};
 use tokio::sync::broadcast;
 
 use android_log;
@@ -60,7 +60,13 @@ pub extern "system" fn Java_network_beechat_app_kaonic_Kaonic_nativeInit(
 ) -> jlong {
     let (cmd_tx, _) = tokio::sync::broadcast::channel::<KaonicCommand>(32);
 
-    let runtime = Arc::new(Runtime::new().expect("Failed to create Tokio runtime"));
+    let runtime = Arc::new(
+        runtime::Builder::new_multi_thread()
+            .worker_threads(24)
+            .enable_all()
+            .build()
+            .expect("tokio runtime"),
+    );
 
     let jni = {
         let class = env.get_object_class(obj).expect("object class");
@@ -356,7 +362,7 @@ async fn reticulum_task(
                     .announce(&destination_list.contact.lock().unwrap(), None)
                     .unwrap();
             }
-            tokio::time::sleep(Duration::from_secs(10)).await;
+            tokio::time::sleep(Duration::from_secs(5)).await;
         }
     });
 
