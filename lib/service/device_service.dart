@@ -85,7 +85,7 @@ class DeviceService {
               .withFlag(RadioPacket.flagBroadcast));
           break;
         case "PACKET":
-          final srcAddress = data["srcAddress"] as String;
+          // final srcAddress = data["srcAddress"] as String;
           final dstAddress = data["dstAddress"] as String;
           var packet = RadioPacket.fromBytes(data["data"] as Uint8List);
           if (packet != null) {

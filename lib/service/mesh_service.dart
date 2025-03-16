@@ -140,8 +140,7 @@ class MeshService {
 
   Future<void> _handleCallVoicePacket(
       RadioPacket packet, Uint8List clearPayload) async {
-    final decodedVoice =
-        clearPayload; // await _deviceService.codecDecode(clearPayload);
+    final decodedVoice = clearPayload;
 
     _voiceStreamController.add(MeshVoice(
       packet.srcAddress,
@@ -430,8 +429,7 @@ class MeshService {
           .unicast(node.address())
           .withSrcAddress(_address)
           .withType(type)
-          .withFlag(RadioPacket.flagPrivate)
-          .withFlag(RadioPacket.flagAknowladge);
+          .withFlag(RadioPacket.flagPrivate);
 
       await _sendPacket(packet);
     } else {
@@ -442,8 +440,7 @@ class MeshService {
   Future<void> sendCallVoice(RadioAddress address, Uint8List voiceData) async {
     final node = findNodeByAddress(address);
     if (node != null) {
-      final encodedVoice =
-          voiceData; //await _deviceService.codecEncode(voiceData);
+      final encodedVoice = voiceData;
       final chipherText = await node.encrypt(encodedVoice);
 
       final packet = RadioPacket()

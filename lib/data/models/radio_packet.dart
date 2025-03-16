@@ -1,4 +1,3 @@
-
 import 'dart:typed_data';
 
 import 'package:kaonic/data/models/radio_address.dart';
@@ -28,10 +27,11 @@ enum RadioPacketType {
         .firstWhere((e) => e.id == id, orElse: () => RadioPacketType.none);
   }
 }
+
 class RadioPacket {
   // Constants
   static const magic = 0xB1;
-  static const maxPayloadSize = 512;
+  static const maxPayloadSize = 256;
   static const minPacketSize = 1 +
       1 +
       1 +
