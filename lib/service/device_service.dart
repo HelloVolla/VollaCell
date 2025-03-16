@@ -44,47 +44,15 @@ class DeviceService {
 
   DeviceService() {
     _handleAdvChannel(eventChannel.receiveBroadcastStream());
-    // _enumerateDevices();
   }
 
-  Future<void> _openDevice(String deviceName) async {
-    try {
-      final opened =
-          await platform.invokeMethod('openDevice', {"deviceName": deviceName});
-      if (opened) {
-        configure(RadioConfig());
-      } else {
-        //_enumerateDevices();
-      }
-    } on PlatformException catch (e) {
-      print("Failed to call write: '${e.message}'");
-      // _enumerateDevices();
-    }
+  Future<void> startUser(String userKey) async {
+    return await platform.invokeMethod('userStart', {"key": userKey});
   }
-
-  void startUser(String userKey) async {
-    await platform.invokeMethod('userStart', {"key": userKey});
-  }
-
-  Future<void> configure(RadioConfig config) async {
-    _config = config;
-
-    final rc = await platform.invokeMethod('kaonicConfigure', {
-      "rfIndex": _config.rfIndex,
-      "freq": _config.frequency,
-      "spacing": _config.spacing,
-      "channel": _config.channel,
-    });
-
-    _startReceive();
-  }
-
-  Future<void> closeDevice() async {}
 
   Future<void> transmit(RadioPacket packet) async {
-
     final packetBytes = packet.toBytes();
-    if (packetBytes.length > 2048) {
+    if (packetBytes.length > 512) {
       throw Exception("tx buffer overflow");
     }
 
@@ -100,21 +68,6 @@ class DeviceService {
     }
   }
 
-  void _startReceive() {}
-
-  // void _enumerateDevices() {
-  //   _searchDevicesTimer?.cancel();
-  //   // _searchDevicesTimer =
-  //   //     Timer.periodic(const Duration(seconds: 1), (timer) async {
-  //   //   final devices = await platform.invokeMethod('enumerateDevices');
-  //   //
-  //   //   if (devices is List<dynamic> && devices.isNotEmpty) {
-  //   //     _openDevice(devices.first);
-  //   //     timer.cancel();
-  //   //   }
-  //   // });
-  // }
-
   void _handleAdvChannel(Stream<dynamic> stream) {
     stream.listen((value) {
       final data = (value as Map).map(
@@ -123,17 +76,29 @@ class DeviceService {
       final type = data["type"];
       switch (type) {
         case "ANNOUNCE":
-          final address = data["address"] as String;
-          print("create announce packet $address");
+          final srcAddress = data["srcAddress"] as String;
           _packetStreamController.add(RadioPacket()
               .broadcast()
-              .withSrcAddress(RadioAddress.fromHex(address))
+              .withSrcAddress(RadioAddress.fromHex(srcAddress))
               .withType(RadioPacketType.advertise)
               .withFlag(RadioPacket.flagPublic)
               .withFlag(RadioPacket.flagBroadcast));
           break;
+        case "PACKET":
+          final srcAddress = data["srcAddress"] as String;
+          final dstAddress = data["dstAddress"] as String;
+          var packet = RadioPacket.fromBytes(data["data"] as Uint8List);
+          if (packet != null) {
+            // packet.srcAddress.copy(RadioAddress.fromHex(srcAddress));
+            packet.dstAddress.copy(RadioAddress.fromHex(dstAddress));
+
+            print(
+                "received packet ${packet.srcAddress.toHex()} ${packet.dstAddress.toHex()}");
+
+            _packetStreamController.add(packet);
+          }
+          break;
       }
-      
     });
   }
 }

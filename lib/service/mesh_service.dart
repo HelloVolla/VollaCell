@@ -18,14 +18,13 @@ import 'package:kaonic/service/device_service.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:rxdart/subjects.dart';
 
-
 abstract class MeshServiceExceptions implements Exception {}
 
 class MeshServiceUnknownNodeAddressException extends MeshServiceExceptions {}
 
 class MeshService {
   final DeviceService _deviceService;
-  final SimpleKeyPairData _keyPair;
+  final String _key;
   late final SimplePublicKey _publicKey;
   late final MeshAddress _address;
 
@@ -59,11 +58,11 @@ class MeshService {
   MeshCall get callStatusValue => _callStatus.value;
   Timer? _automaticallyEndCallTimer;
 
-  MeshService(this._deviceService, this._keyPair) {
-    _keyPair.extractPublicKey().then((publickKey) async {
-      _publicKey = publickKey;
-      _address = await MeshAddress.fromPublicKey(publickKey);
-    });
+  MeshService(this._deviceService, this._key) {
+    _address =
+        MeshAddress.fromRadio(RadioAddress.fromHex(_key.substring(64 * 2)));
+
+    print("start mesh service /${_address.toHex()}/");
   }
 
   void _updateChatWithTextMessage({
@@ -109,8 +108,7 @@ class MeshService {
       _chats.value[address]?.unreadMessagesCount = 0;
 
   Future<void> _handleAdvertisePacket(RadioPacket packet) async {
-   
-    final address =  MeshAddress.fromRadio(packet.srcAddress);
+    final address = MeshAddress.fromRadio(packet.srcAddress);
 
     final addressHex = address.toHex();
     final isNewMessage = !_nodes.value.containsKey(addressHex);
@@ -118,7 +116,6 @@ class MeshService {
     Map<String, MeshNode> updatedNodes = {}..addAll(_nodes.value);
 
     if (isNewMessage) {
-     
       updatedNodes[addressHex] = MeshNode(address);
 
       // ignore: avoid_print
@@ -232,7 +229,6 @@ class MeshService {
   }
 
   Future<void> handlePacket(RadioPacket packet) async {
-
     if (!packet.dstAddress.isEmpty() && !packet.dstAddress.equals(_address)) {
       // Filter packets not addressed to us
       return;

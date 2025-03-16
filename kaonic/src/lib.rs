@@ -1,11 +1,12 @@
-use jni::objects::{GlobalRef, JByteArray, JClass, JMethodID, JObject, JString};
-use jni::sys::{jlong, jmethodID, jstring};
-use jni::{signature, JNIEnv, JavaVM};
+use jni::objects::{GlobalRef, JByteArray, JClass, JMethodID, JObject, JString, JValue};
+use jni::signature::{Primitive, ReturnType};
+use jni::sys::{jlong, jstring};
+use jni::{JNIEnv, JavaVM};
 use rand_core::OsRng;
-use reticulum::destination::link::{Link, LinkPayload};
+use reticulum::destination::link::{LinkEvent, LinkPayload};
 use reticulum::destination::{DestinationName, SingleInputDestination};
 use reticulum::hash::AddressHash;
-use reticulum::identity::{Identity, PrivateIdentity};
+use reticulum::identity::PrivateIdentity;
 use reticulum::iface::kaonic::kaonic_grpc::KaonicGrpcInterface;
 use reticulum::transport::Transport;
 use std::sync::{Arc, Mutex};
@@ -14,7 +15,7 @@ use tokio::runtime::Runtime;
 use tokio::sync::broadcast;
 
 use android_log;
-use log;
+use log::{self, LevelFilter};
 
 struct KaonicDestinationList {
     contact: Arc<Mutex<SingleInputDestination>>,
@@ -22,7 +23,9 @@ struct KaonicDestinationList {
 
 #[derive(Clone)]
 struct KaonicJni {
-    context: GlobalRef,
+    _context: GlobalRef,
+    announce_method: JMethodID,
+    receive_method: JMethodID,
 }
 
 struct KaonicState {
@@ -43,15 +46,16 @@ enum KaonicCommand {
 }
 
 #[no_mangle]
-pub extern "system" fn Java_network_beechat_app_kaonic_Kaonic_libraryInit(env: JNIEnv) {
-    android_log::init("Kaonic").unwrap();
+pub extern "system" fn Java_network_beechat_app_kaonic_Kaonic_libraryInit(_env: JNIEnv) {
+    android_log::init("kaonic").unwrap();
+    log::set_max_level(LevelFilter::Debug);
     log::info!("kaonic library initialized");
 }
 
 #[no_mangle]
 pub extern "system" fn Java_network_beechat_app_kaonic_Kaonic_nativeInit(
     mut env: JNIEnv,
-    _class: JClass,
+    obj: JObject,
     context: JObject,
 ) -> jlong {
     let (cmd_tx, _) = tokio::sync::broadcast::channel::<KaonicCommand>(32);
@@ -59,10 +63,30 @@ pub extern "system" fn Java_network_beechat_app_kaonic_Kaonic_nativeInit(
     let runtime = Arc::new(Runtime::new().expect("Failed to create Tokio runtime"));
 
     let jni = {
+        let class = env.get_object_class(obj).expect("object class");
+
+        let announce_method = env
+            .get_method_id(
+                &class,
+                "announce",
+                "(Ljava/lang/String;Ljava/lang/String;)V",
+            )
+            .expect("announce method");
+
+        let receive_method = env
+            .get_method_id(
+                &class,
+                "receive",
+                "(Ljava/lang/String;Ljava/lang/String;[B)V",
+            )
+            .expect("receive method");
+
         KaonicJni {
-            context: env
+            _context: env
                 .new_global_ref(context)
                 .expect("Failed to create global ref"),
+            announce_method,
+            receive_method,
         }
     };
 
@@ -136,7 +160,12 @@ pub extern "system" fn Java_network_beechat_app_kaonic_Kaonic_nativeGenerateIden
     // Generate new identity
     let identity = PrivateIdentity::new_from_rand(OsRng);
 
-    env.new_string(identity.to_hex_string()).unwrap().into_raw()
+    let destination =
+        SingleInputDestination::new(identity.clone(), DestinationName::new("kaonic", "contact"));
+
+    let key = identity.to_hex_string() + &destination.desc.address_hash.to_hex_string();
+
+    env.new_string(&key).unwrap().into_raw()
 }
 
 #[no_mangle]
@@ -154,16 +183,14 @@ pub extern "system" fn Java_network_beechat_app_kaonic_Kaonic_nativeTransmit(
         Err(_) => "".into(),
     };
 
-    log::debug!("addr {}", addr);
-
     let addr = AddressHash::new_from_hex_string(&addr).unwrap();
 
     let payload_vec: Vec<u8> = match env.convert_byte_array(payload) {
         Ok(bytes) => bytes,
-        Err(_) => "".into(),
+        Err(_) => vec![],
     };
 
-    state.cmd_tx.send(KaonicCommand::Message(KaonicMessage {
+    let _ = state.cmd_tx.send(KaonicCommand::Message(KaonicMessage {
         address_hash: addr,
         payload: LinkPayload::new_from_vec(&payload_vec),
     }));
@@ -185,6 +212,12 @@ async fn reticulum_task(
             .add_destination(identity.clone(), DestinationName::new("kaonic", "contact")),
     };
 
+    log::info!("> identity: {}", identity.address_hash());
+    log::info!(
+        "> contact: {}",
+        destination_list.contact.lock().unwrap().desc.address_hash
+    );
+
     let _client = KaonicGrpcInterface::start(
         reticulum::iface::kaonic::kaonic_grpc::KaonicGrpcConfig {
             // TODO: update host
@@ -194,55 +227,141 @@ async fn reticulum_task(
         transport.packet_channel(),
     );
 
-    let mut announce_interval = tokio::time::interval(Duration::from_secs(10));
+    let transport = Arc::new(Mutex::new(transport));
 
-    let mut announces = transport.recv_announces();
-
-    {
-        loop {
-            tokio::select! {
-                Ok(cmd) = cmd_rx.recv() => {
-                    match cmd {
-                        KaonicCommand::Message(msg) => {
-                            log::trace!("kaonic: send message");
-                            let link = transport.find_out_link(msg.address_hash);
-                            if let Some(link) = link {
-                                let link = link.lock().unwrap();
-                                if let Ok(packet) = link.data_packet(msg.payload.as_slice()) {
-                                    let _ = transport.send(packet);
-                                } else {
-                                    log::error!("kaonic: link data packet error");
-                                }
-                            } else {
-                                log::error!("kaonic: link for {} not found", msg.address_hash);
+    let cmd_task = {
+        let transport = transport.clone();
+        tokio::spawn(async move {
+            loop {
+                tokio::select! {
+                    Ok(cmd) = cmd_rx.recv() => {
+                        let transport = transport.lock().unwrap();
+                        match cmd {
+                            KaonicCommand::Message(msg) => {
+                                log::debug!("kaonic: send message to {}", msg.address_hash);
+                                transport.send_to_out_links(&msg.address_hash, msg.payload.as_slice());
                             }
                         }
                     }
                 }
-                Ok(out_destination) = announces.recv() => {
-                    let destination = out_destination.lock().unwrap();
-                    // TODO: check if destination is compatible
-                    // Start link
-                    let _link = transport.link(destination.desc);
+            }
+        })
+    };
 
-                    let mut env = jvm
-                        .attach_current_thread()
-                        .expect("Failed to attach thread");
+    let contact_address = destination_list
+        .contact
+        .lock()
+        .unwrap()
+        .desc
+        .address_hash
+        .to_hex_string();
 
-                    let identity = env
-                    .new_string(destination.identity.to_hex_string())
-                    .unwrap();
+    let in_link_task = {
+        let jvm = jvm.clone();
+        let obj = obj.clone();
+        let transport = transport.clone();
+        tokio::spawn(async move {
+            let mut in_link_events = transport.lock().unwrap().in_link_events();
+            loop {
+                tokio::select! {
+                    Ok(event_data) = in_link_events.recv() => {
+                        match event_data.event {
+                            LinkEvent::Data(data)=> {
 
-                    let address = env
-                    .new_string(destination.desc.address_hash.to_hex_string())
-                    .unwrap();
+                                let mut env = jvm
+                                    .attach_current_thread_permanently()
+                                    .expect("failed to attach thread");
 
-                    env.call_method(&obj, "announce", "(Ljava/lang/String;Ljava/lang/String;)V", &[(&identity).into(),(&address).into()]).unwrap();
+                                let dst_address = env
+                                .new_string(&contact_address)
+                                .unwrap();
+
+                                let src_address = env
+                                .new_string(event_data.address_hash.to_hex_string())
+                                .unwrap();
+
+                                let packet = env
+                                .new_byte_array(data.len() as i32)
+                                .unwrap();
+
+                                let buffer: &[i8] = unsafe { std::mem::transmute(data.as_slice()) };
+
+                                env.set_byte_array_region(&packet, 0, buffer).expect("byte array with data");
+
+                                let arguments = [JValue::Object(&dst_address).as_jni(),
+                                                 JValue::Object(&src_address).as_jni(),
+                                                 JValue::Object(&packet).as_jni()];
+                                unsafe { env.call_method_unchecked(&obj, jni.receive_method, ReturnType::Primitive(Primitive::Void), &arguments[..]).unwrap() };
+                            },
+                            LinkEvent::Activated => {
+                                log::info!("kaonic: input link {} activated", event_data.address_hash);
+                            },
+                            LinkEvent::Closed => {
+                                log::warn!("kaonic: input link {} closed", event_data.address_hash);
+                            },
+                        }
+                    }
                 }
-                _ = announce_interval.tick() => {
-                    transport.announce(&destination_list.contact.lock().unwrap(), None).unwrap();
-                }
-            };
+            }
+        })
+    };
+
+    let destination_task = {
+        let transport = transport.clone();
+        let jvm = jvm.clone();
+        let mut announce_interval = tokio::time::interval(Duration::from_secs(10));
+        let mut announces = transport.lock().unwrap().recv_announces();
+
+        tokio::spawn(async move {
+            loop {
+                tokio::select! {
+                    Ok(out_destination) = announces.recv() => {
+                        let destination = out_destination.lock().unwrap();
+                        // TODO: check if destination is compatible
+
+                        let transport = transport.lock().unwrap();
+                        log::trace!("kaonic: attach link to {}", destination.desc.address_hash);
+                        let _ = transport.link(destination.desc);
+
+                        let mut env = jvm
+                            .attach_current_thread_permanently()
+                            .expect("failed to attach thread");
+
+                        let identity = env
+                            .new_string(destination.identity.to_hex_string())
+                            .unwrap();
+
+                        let address = env
+                            .new_string(destination.desc.address_hash.to_hex_string())
+                            .unwrap();
+
+                        let arguments = [JValue::Object(&identity).as_jni(), JValue::Object(&address).as_jni()];
+
+                        unsafe { env.call_method_unchecked(&obj, jni.announce_method, ReturnType::Primitive(Primitive::Void), &arguments[..]).unwrap() };
+                    }
+                    _ = announce_interval.tick() => {
+                    }
+                };
+            }
+        })
+    };
+
+    let announce_task = tokio::spawn(async move {
+        loop {
+            // Send announce
+            {
+                transport
+                    .lock()
+                    .unwrap()
+                    .announce(&destination_list.contact.lock().unwrap(), None)
+                    .unwrap();
+            }
+            tokio::time::sleep(Duration::from_secs(10)).await;
         }
-    }
+    });
+
+    destination_task.await.unwrap();
+    announce_task.await.unwrap();
+    cmd_task.await.unwrap();
+    in_link_task.await.unwrap();
 }

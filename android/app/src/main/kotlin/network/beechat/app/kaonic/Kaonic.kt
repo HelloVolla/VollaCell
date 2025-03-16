@@ -36,13 +36,26 @@ class Kaonic(context: Context) {
     }
 
     @Keep
-    fun announce(identity: String, address: String) {
-        Log.d("Kaonic", "Found Identity: " + address)
+    fun announce(identity: String, srcAddress: String) {
+        Log.d("Kaonic", "Found Identity: " + srcAddress)
 
         Handler(Looper.getMainLooper()).post {
             val resultData: HashMap<String, Any> = HashMap()
             resultData["type"] = "ANNOUNCE"
-            resultData["address"] = address
+            resultData["srcAddress"] = srcAddress
+            resultData["identity"] = identity
+            eventSink?.success(resultData)
+        }
+    }
+
+    @Keep
+    fun receive(dstAddress: String, srcAddress: String, data: ByteArray) {
+        Handler(Looper.getMainLooper()).post {
+            val resultData: HashMap<String, Any> = HashMap()
+            resultData["type"] = "PACKET"
+            resultData["srcAddress"] = srcAddress
+            resultData["dstAddress"] = dstAddress
+            resultData["data"] = data
             eventSink?.success(resultData)
         }
     }

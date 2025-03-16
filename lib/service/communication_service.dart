@@ -34,12 +34,7 @@ class CommunicationService {
   }
 
   void initializeCommunicationLayer(UserModel user) {
-    _meshService = MeshService(
-        _deviceService,
-        SimpleKeyPairData(user.key.codeUnits,
-            publicKey:
-                SimplePublicKey(user.key.codeUnits, type: KeyPairType.x25519),
-            type: KeyPairType.x25519));
+    _meshService = MeshService(_deviceService, user.key);
     _initMeshService();
 
     _callService = CallService(_meshService!);
