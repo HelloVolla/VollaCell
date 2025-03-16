@@ -5,15 +5,26 @@ sealed class HomeEvent {}
 
 final class _InitEvent extends HomeEvent {}
 
+final class _UpdatedChats extends HomeEvent {
+  _UpdatedChats({required this.chats});
 
-final class _UpdatedUser extends HomeEvent {
-  _UpdatedUser({required this.user});
+  final Map<String, MeshChat> chats;
+}
 
-  final UserModel user;
+final class _HandleCallStatus extends HomeEvent {
+  _HandleCallStatus({required this.call});
+
+  final MeshCall call;
 }
 
 final class _UpdatedNodes extends HomeEvent {
   _UpdatedNodes({required this.nodes});
 
   final Map<String, MeshNode> nodes;
+}
+
+final class _UpdatedUser extends HomeEvent {
+  _UpdatedUser({required this.user});
+
+  final UserModel user;
 }

@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:kaonic/data/models/meah_chat.dart';
+import 'package:kaonic/data/models/mesh_call.dart';
 import 'package:kaonic/data/models/mesh_node.dart';
 import 'package:kaonic/data/models/user_model.dart';
 import 'package:kaonic/service/communication_service.dart';
@@ -24,7 +26,9 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         super(HomeState(user: userService.user)) {
     on<_InitEvent>(_initEvent);
     on<_UpdatedUser>(_updatedUser);
+    on<_UpdatedChats>(_updatedChats);
     on<_UpdatedNodes>(_updatedNodes);
+    on<_HandleCallStatus>(_handleCallStatus);
 
     add(_InitEvent());
 
@@ -41,12 +45,17 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   final CommunicationService _communicationService;
 
   late final StreamSubscription<Query<UserModel>>? _userSubscription;
+  late final StreamSubscription<Map<String, MeshChat>>? _chatSubscription;
   late final StreamSubscription<Map<String, MeshNode>>? _nodesSubscription;
+  late final StreamSubscription<MeshCall>? _callStatusSubscription;
 
   @override
   close() async {
     _userSubscription?.cancel();
+    _chatSubscription?.cancel();
+    _communicationService.dispose();
     _nodesSubscription?.cancel();
+    _callStatusSubscription?.cancel();
     super.close();
   }
 
@@ -57,6 +66,13 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       if (newUser == null) return;
       add(_UpdatedUser(user: newUser));
     });
+    
+    _chatSubscription = _communicationService.chats?.listen(
+      (event) {},
+    );
+
+    _callStatusSubscription = _communicationService.callStatusStream
+        ?.listen((call) => add(_HandleCallStatus(call: call)));
   }
 
   FutureOr<void> _updatedUser(_UpdatedUser event, Emitter<HomeState> emit) {
@@ -65,5 +81,19 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
   FutureOr<void> _updatedNodes(_UpdatedNodes event, Emitter<HomeState> emit) {
     emit(state.copyWith(nodes: event.nodes));
+  }
+
+
+  FutureOr<void> _handleCallStatus(
+      _HandleCallStatus event, Emitter<HomeState> emit) {
+    if (event.call.status == MeshCallStatuses.incomingCall) {
+      emit(IncomingCall.fromParentState(state));
+    }
+  }
+
+  FutureOr<void> _updatedChats(_UpdatedChats event, Emitter<HomeState> emit) {
+    emit(state.copyWith(
+        unreadMessages: event.chats
+            .map((key, value) => MapEntry(key, value.unreadMessagesCount))));
   }
 }
