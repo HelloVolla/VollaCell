@@ -63,8 +63,9 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   FutureOr<void> _updatedChats(_UpdatedChats event, Emitter<ChatState> emit) {
     _communicationService.markMessageRead(state.address);
 
-    emit(
-        state.copyWith(messages: event.chats[_args.contact.address]?.messages));
+    emit(state.copyWith(
+        messages: event.chats[_args.contact.address]?.messages,
+        flagScrollToDown: true));
   }
 
   FutureOr<void> _initiateCall(
@@ -75,8 +76,8 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   }
 
   void _filePicked(FilePicked event, Emitter<ChatState> emit) {
-    if (event.file.files.isEmpty && event.file.files.first.path!=null) return;
-final f = File(event.file.files.first.path!);
+    if (event.file.files.isEmpty && event.file.files.first.path != null) return;
+    final f = File(event.file.files.first.path!);
     _communicationService.sendFile(state.address, event.file.files.first.name,
         f.readAsBytesSync(), f.path);
   }

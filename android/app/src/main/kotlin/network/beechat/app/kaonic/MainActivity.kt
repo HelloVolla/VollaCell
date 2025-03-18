@@ -96,19 +96,6 @@ class MainActivity : FlutterActivity() {
             }
         }
 
-        androidAudio = AndroidAudio(context)
-        EventChannel(flutterEngine?.dartExecutor?.binaryMessenger, CHANNEL_EVENT)
-            .setStreamHandler(
-                object : EventChannel.StreamHandler {
-                    override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
-                        androidAudio?.eventSink = events
-                    }
-
-                    override fun onCancel(arguments: Any?) {
-                        androidAudio?.eventSink = null
-                    }
-                }
-            )
 
         EventChannel(flutterEngine?.dartExecutor?.binaryMessenger, KAONIC_EVENT)
             .setStreamHandler(
@@ -145,6 +132,30 @@ class MainActivity : FlutterActivity() {
     @Keep
     fun read(data: ByteArray?, maxlen: Int): Int {
         return serial!!.read(data, maxlen)
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if(requestCode==1 && grantResults.isNotEmpty()){
+
+            androidAudio = AndroidAudio(context)
+            EventChannel(flutterEngine?.dartExecutor?.binaryMessenger, CHANNEL_EVENT)
+                .setStreamHandler(
+                    object : EventChannel.StreamHandler {
+                        override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
+                            androidAudio?.eventSink = events
+                        }
+
+                        override fun onCancel(arguments: Any?) {
+                            androidAudio?.eventSink = null
+                        }
+                    }
+                )
+        }
     }
 }
 
