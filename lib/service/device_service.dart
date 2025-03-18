@@ -52,7 +52,7 @@ class DeviceService {
 
   Future<void> transmit(RadioPacket packet) async {
     final packetBytes = packet.toBytes();
-    if (packetBytes.length > 512) {
+    if (packetBytes.length > 2048) {
       throw Exception("tx buffer overflow");
     }
 

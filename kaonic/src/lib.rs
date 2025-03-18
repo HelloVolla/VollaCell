@@ -9,10 +9,10 @@ use reticulum::hash::AddressHash;
 use reticulum::identity::PrivateIdentity;
 use reticulum::iface::kaonic::kaonic_grpc::KaonicGrpcInterface;
 use reticulum::transport::Transport;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 use std::time::Duration;
 use tokio::runtime::{self, Runtime};
-use tokio::sync::broadcast;
+use tokio::sync::{broadcast, mpsc, Mutex};
 
 use android_log;
 use log::{self, LevelFilter};
@@ -30,7 +30,8 @@ struct KaonicJni {
 
 struct KaonicState {
     jni: KaonicJni,
-    cmd_tx: tokio::sync::broadcast::Sender<KaonicCommand>,
+    cmd_tx: tokio::sync::mpsc::Sender<KaonicCommand>,
+    cmd_rx: Arc<Mutex<tokio::sync::mpsc::Receiver<KaonicCommand>>>,
     runtime: Arc<Runtime>,
 }
 
@@ -58,7 +59,7 @@ pub extern "system" fn Java_network_beechat_app_kaonic_Kaonic_nativeInit(
     obj: JObject,
     context: JObject,
 ) -> jlong {
-    let (cmd_tx, _) = tokio::sync::broadcast::channel::<KaonicCommand>(32);
+    let (cmd_tx, cmd_rx) = tokio::sync::mpsc::channel::<KaonicCommand>(1);
 
     let runtime = Arc::new(
         runtime::Builder::new_multi_thread()
@@ -99,6 +100,7 @@ pub extern "system" fn Java_network_beechat_app_kaonic_Kaonic_nativeInit(
     let state = Box::new(KaonicState {
         jni,
         cmd_tx,
+        cmd_rx: Arc::new(Mutex::new(cmd_rx)),
         runtime,
     });
 
@@ -147,7 +149,7 @@ pub extern "system" fn Java_network_beechat_app_kaonic_Kaonic_nativeStart(
 
             state.runtime.spawn(reticulum_task(
                 identity,
-                state.cmd_tx.subscribe(),
+                state.cmd_rx.clone(),
                 Arc::clone(&jvm),
                 env.new_global_ref(obj).unwrap(),
                 state.jni.clone(),
@@ -196,15 +198,17 @@ pub extern "system" fn Java_network_beechat_app_kaonic_Kaonic_nativeTransmit(
         Err(_) => vec![],
     };
 
-    let _ = state.cmd_tx.send(KaonicCommand::Message(KaonicMessage {
-        address_hash: addr,
-        payload: LinkPayload::new_from_vec(&payload_vec),
-    }));
+    let _ = state
+        .cmd_tx
+        .blocking_send(KaonicCommand::Message(KaonicMessage {
+            address_hash: addr,
+            payload: LinkPayload::new_from_vec(&payload_vec),
+        }));
 }
 
 async fn reticulum_task(
     identity: PrivateIdentity,
-    mut cmd_rx: broadcast::Receiver<KaonicCommand>,
+    cmd_rx: Arc<Mutex<mpsc::Receiver<KaonicCommand>>>,
     jvm: Arc<JavaVM>,
     obj: GlobalRef,
     jni: KaonicJni,
@@ -215,22 +219,25 @@ async fn reticulum_task(
 
     let destination_list = KaonicDestinationList {
         contact: transport
-            .add_destination(identity.clone(), DestinationName::new("kaonic", "contact")),
+            .add_destination(identity.clone(), DestinationName::new("kaonic", "contact"))
+            .await,
     };
 
     log::info!("> identity: {}", identity.address_hash());
     log::info!(
         "> contact: {}",
-        destination_list.contact.lock().unwrap().desc.address_hash
+        destination_list.contact.lock().await.desc.address_hash
     );
 
     let _client = KaonicGrpcInterface::start(
         reticulum::iface::kaonic::kaonic_grpc::KaonicGrpcConfig {
             // TODO: update host
-            addr: "http://192.168.1.118:8080".into(),
+            // addr: "http://192.168.1.66:8080".into(),
+            // addr: "http://192.168.0.123:8080".into(),
+            addr: "http://192.168.72.1:8080".into(),
             module: reticulum::iface::kaonic::RadioModule::RadioA,
         },
-        transport.packet_channel(),
+        transport.channel().await,
     );
 
     let transport = Arc::new(Mutex::new(transport));
@@ -238,14 +245,16 @@ async fn reticulum_task(
     let cmd_task = {
         let transport = transport.clone();
         tokio::spawn(async move {
+            let cmd_rx = cmd_rx.clone();
+            let mut cmd_rx = cmd_rx.lock().await;
             loop {
                 tokio::select! {
-                    Ok(cmd) = cmd_rx.recv() => {
-                        let transport = transport.lock().unwrap();
+                    Some(cmd) = cmd_rx.recv() => {
+                        let transport = transport.lock().await;
                         match cmd {
                             KaonicCommand::Message(msg) => {
                                 log::debug!("kaonic: send message to {}", msg.address_hash);
-                                transport.send_to_out_links(&msg.address_hash, msg.payload.as_slice());
+                                transport.send_to_out_links(&msg.address_hash, msg.payload.as_slice()).await;
                             }
                         }
                     }
@@ -257,7 +266,7 @@ async fn reticulum_task(
     let contact_address = destination_list
         .contact
         .lock()
-        .unwrap()
+        .await
         .desc
         .address_hash
         .to_hex_string();
@@ -267,7 +276,7 @@ async fn reticulum_task(
         let obj = obj.clone();
         let transport = transport.clone();
         tokio::spawn(async move {
-            let mut in_link_events = transport.lock().unwrap().in_link_events();
+            let mut in_link_events = transport.lock().await.in_link_events();
             loop {
                 tokio::select! {
                     Ok(event_data) = in_link_events.recv() => {
@@ -316,18 +325,19 @@ async fn reticulum_task(
         let transport = transport.clone();
         let jvm = jvm.clone();
         let mut announce_interval = tokio::time::interval(Duration::from_secs(10));
-        let mut announces = transport.lock().unwrap().recv_announces();
+        let mut announces = transport.lock().await.recv_announces().await;
 
         tokio::spawn(async move {
             loop {
                 tokio::select! {
                     Ok(out_destination) = announces.recv() => {
-                        let destination = out_destination.lock().unwrap();
+                        let destination = out_destination.lock().await;
                         // TODO: check if destination is compatible
 
-                        let transport = transport.lock().unwrap();
+                        let transport = transport.lock().await;
+
                         log::trace!("kaonic: attach link to {}", destination.desc.address_hash);
-                        let _ = transport.link(destination.desc);
+                        let _ = transport.link(destination.desc).await;
 
                         let mut env = jvm
                             .attach_current_thread_permanently()
@@ -356,12 +366,17 @@ async fn reticulum_task(
         loop {
             // Send announce
             {
-                transport
+                let announce = destination_list
+                    .contact
                     .lock()
-                    .unwrap()
-                    .announce(&destination_list.contact.lock().unwrap(), None)
+                    .await
+                    .announce(OsRng, None)
                     .unwrap();
+
+                log::debug!("kaonic: send announce");
+                transport.lock().await.send(announce).await;
             }
+
             tokio::time::sleep(Duration::from_secs(5)).await;
         }
     });

@@ -31,7 +31,7 @@ enum RadioPacketType {
 class RadioPacket {
   // Constants
   static const magic = 0xB1;
-  static const maxPayloadSize = 256;
+  static const maxPayloadSize = 1024;
   static const minPacketSize = 1 +
       1 +
       1 +
