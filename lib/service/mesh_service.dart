@@ -84,24 +84,23 @@ class MeshService {
     _chats.add(newChats);
   }
 
-  void _updateChatWithFileFromMeMessage({
+  MeshFileMessage _updateChatWithFileFromMeMessage({
     required String address,
     required String filePath,
     required String fileName,
   }) {
     final Map<String, MeshChat> newChats = Map.from(_chats.value);
+    final fileMessage = MeshFileMessage(
+        senderAddress: _address.toHex(),
+        localPath: filePath,
+        fileName: fileName);
     newChats[address] = MeshChat(
-      messages: [
-        ...newChats[address]?.messages ?? [],
-        MeshFileMessage(
-            senderAddress: _address.toHex(),
-            localPath: filePath,
-            fileName: fileName)
-      ],
+      messages: [...newChats[address]?.messages ?? [], fileMessage],
       unreadMessagesCount: (newChats[address]?.unreadMessagesCount ?? 0) + 1,
     );
 
     _chats.add(newChats);
+    return fileMessage;
   }
 
   void markMessageRead(String address) =>
@@ -361,7 +360,7 @@ class MeshService {
 
   Future<void> sendFile(MeshAddress address, String name, Uint8List? fileData,
       String filePath) async {
-    _updateChatWithFileFromMeMessage(
+    final fileMessage = _updateChatWithFileFromMeMessage(
         address: address.toHex(), filePath: filePath, fileName: name);
     final node = findNodeByAddress(address);
     if (node == null || fileData == null) return;
@@ -378,18 +377,22 @@ class MeshService {
 
     const maxChunkSize = RadioPacket.maxPayloadSize;
 
+    fileMessage.bytes ??= [];
     for (int i = 0; i < fileData.length; i += maxChunkSize) {
       final chunkSize = min(maxChunkSize, fileData.length - i);
 
       print("> send file chunk ${i}/${fileData.length}");
-
+      final bytes = fileData.sublist(i, i + chunkSize);
       await _sendPacket(RadioPacket()
           .unicast(node.address())
           .withSrcAddress(_address)
           .withType(RadioPacketType.fileChunk)
           .withFlag(RadioPacket.flagPrivate)
           .withFlag(RadioPacket.flagAknowladge)
-          .withPayload(await node.encrypt(fileData.sublist(i, i + chunkSize))));
+          .withPayload(await node.encrypt(bytes)));
+
+      fileMessage.bytes?.addAll(bytes);
+      _chats.add(Map.from(_chats.value));
     }
 
     print("> send file finish");
@@ -469,7 +472,7 @@ class MeshService {
   _handleFilePacket(RadioPacket packet, Uint8List clearPayload,
       {required bool isFinalPart}) async {
     final Map<String, MeshChat> newChats = Map.from(_chats.value);
-    final address = packet.dstAddress.toHex();
+    final address = packet.srcAddress.toHex();
     final fileMessages = newChats[packet.srcAddress.toHex()]?.messages.where(
           (e) =>
               e is MeshFileMessage &&
@@ -504,7 +507,7 @@ class MeshService {
       messages: [
         ...newChats[address]?.messages ?? [],
         MeshFileMessage(
-            senderAddress: _address.toHex(),
+            senderAddress: packet.srcAddress.toHex(),
             localPath: null,
             fileName: utf8.decode(payload))
       ],

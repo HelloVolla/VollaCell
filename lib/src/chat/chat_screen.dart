@@ -83,7 +83,7 @@ class _ChatScreenState extends State<ChatScreen> {
                           color: Colors.white,
                         )),
                     Text(
-                      widget.args.contact.address,
+                      widget.args.contact.address.length>15? widget.args.contact.address.substring(0,15):widget.args.contact.address,
                       textAlign: TextAlign.center,
                       style: TextStyles.text24.copyWith(color: Colors.white),
                     ),

@@ -42,14 +42,39 @@ class ChatItem extends StatelessWidget {
                 f.localPath == null ? null : () => OpenFile.open(f.localPath!),
             child: Stack(
               children: [
-                const Icon(Icons.file_present_rounded, color: Colors.white),
-                if (f.localPath == null)
-                  const SizedBox(
-                      width: 5,
-                      height: 5,
-                      child: CircularProgressIndicator(
-                        color: AppColors.grey4,
-                      ))
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Icon(Icons.file_present_rounded, color: Colors.white),
+                    SizedBox(
+                      width: 16,
+                    ),
+                    Row(
+                      children: [
+                        if (f.localPath == null)
+                          Padding(
+                            padding: const EdgeInsets.only(right: 6),
+                            child: const SizedBox(
+                                width: 7,
+                                height: 7,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 1.5,
+                                  color: AppColors.yellow,
+                                )),
+                          ),
+                          if(message.senderAddress != myAddress)
+                          Padding(
+                            padding: const EdgeInsets.only(right: 4),
+                            child: Icon(Icons.upload,color: Colors.grey,size: 16,),
+                          ),
+                        Text(
+                          '${((f.bytes?.length ?? 0) / 1024).toStringAsFixed(1)} kB',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ],
+                    )
+                  ],
+                ),
               ],
             ));
     }
