@@ -38,21 +38,26 @@ class _ChatScreenState extends State<ChatScreen> {
       args: widget.args,
       communicationService: context.read<CommunicationService>(),
     );
-    [Permission.manageExternalStorage, Permission.accessMediaLocation].request().then((value) {
-      print("object");
-    },);
-    _fileSubscription=context.read<CommunicationService>().fileEvents?.listen((event) {
-      if(event!=null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('File ${event.fileName} downloaded'),
-              ),
-            );
-      }},);
+    [Permission.manageExternalStorage, Permission.accessMediaLocation]
+        .request()
+        .then(
+      (value) {
+        print("object");
+      },
+    );
+    _fileSubscription = context.read<CommunicationService>().fileEvents?.listen(
+      (event) {
+        if (event != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('File ${event.fileName} downloaded'),
+            ),
+          );
+        }
+      },
+    );
     super.initState();
   }
-
-  
 
   @override
   Widget build(BuildContext context) {
@@ -78,7 +83,7 @@ class _ChatScreenState extends State<ChatScreen> {
                           color: Colors.white,
                         )),
                     Text(
-                      'Contact',
+                      widget.args.contact.address,
                       textAlign: TextAlign.center,
                       style: TextStyles.text24.copyWith(color: Colors.white),
                     ),
@@ -136,7 +141,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                 },
                                 width: 75,
                               ),
-                          SizedBox(height: 10.h),
+                              SizedBox(height: 10.h),
                               Row(
                                 children: [
                                   Flexible(

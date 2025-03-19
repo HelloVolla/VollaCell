@@ -71,7 +71,8 @@ class SaveBackupScreen extends StatelessWidget {
                             padding: EdgeInsets.symmetric(vertical: 10.h),
                             child: _backupTextRow(
                                 title: S.of(context).labelAddress,
-                                text: snapshot.data?.toHex() ?? ''),
+                                text:
+                                    _userAddress(snapshot.data?.toHex() ?? '')),
                           ),
                         ),
                         Text(
@@ -93,6 +94,14 @@ class SaveBackupScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _userAddress(String addressHex) {
+    return addressHex.isEmpty
+        ? ''
+        : addressHex.length < 8
+            ? addressHex.substring(4)
+            : addressHex.substring(addressHex.length - 10);
   }
 
   Row _backupTextRow({required String title, required String text}) {
