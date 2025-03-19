@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.util.Log
 import androidx.annotation.Keep
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -16,10 +17,10 @@ class MainActivity : FlutterActivity() {
     private lateinit var kaonic: Kaonic
 
     private var serial: AndroidSerial? = null
-    private val CHANNEL = "com.example.kaonic/kaonic"
+    private val CHANNEL = "network.beechat.app.kaonic/kaonic"
     private val rxBuffer = ByteArray(2048)
 
-    private val CHANNEL_EVENT = "com.example.kaonic/audioStream"
+    private val CHANNEL_EVENT = "network.beechat.app.kaonic/audioStream"
     private val KAONIC_EVENT = "network.beechat.app.kaonic/packetStream"
     private var eventSink: EventChannel.EventSink? = null
     private var androidAudio: AndroidAudio? = null
@@ -39,6 +40,8 @@ class MainActivity : FlutterActivity() {
                 arrayOf(Manifest.permission.RECORD_AUDIO),
                 1
             )
+        }else{
+            initAudio()
         }
 
 
@@ -69,6 +72,7 @@ class MainActivity : FlutterActivity() {
                 }
 
                 "startAudio"->{
+                    Log.d("Main", "start audio");
                     androidAudio?.startPlaying()
                     androidAudio?.startRecording()
                     result.success(0)
@@ -141,21 +145,24 @@ class MainActivity : FlutterActivity() {
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if(requestCode==1 && grantResults.isNotEmpty()){
-
-            androidAudio = AndroidAudio(context)
-            EventChannel(flutterEngine?.dartExecutor?.binaryMessenger, CHANNEL_EVENT)
-                .setStreamHandler(
-                    object : EventChannel.StreamHandler {
-                        override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
-                            androidAudio?.eventSink = events
-                        }
-
-                        override fun onCancel(arguments: Any?) {
-                            androidAudio?.eventSink = null
-                        }
-                    }
-                )
+            initAudio()
         }
+    }
+
+    private fun initAudio(){
+        androidAudio = AndroidAudio(context)
+        EventChannel(flutterEngine?.dartExecutor?.binaryMessenger, CHANNEL_EVENT)
+            .setStreamHandler(
+                object : EventChannel.StreamHandler {
+                    override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
+                        androidAudio?.eventSink = events
+                    }
+
+                    override fun onCancel(arguments: Any?) {
+                        androidAudio?.eventSink = null
+                    }
+                }
+            )
     }
 }
 

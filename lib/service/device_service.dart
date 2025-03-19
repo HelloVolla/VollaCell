@@ -29,7 +29,7 @@ class RadioConfig {
 }
 
 class DeviceService {
-  static const platform = MethodChannel('com.example.kaonic/kaonic');
+  static const platform = MethodChannel('network.beechat.app.kaonic/kaonic');
   static const eventChannel =
       EventChannel('network.beechat.app.kaonic/packetStream');
 
@@ -91,10 +91,6 @@ class DeviceService {
           if (packet != null) {
             // packet.srcAddress.copy(RadioAddress.fromHex(srcAddress));
             packet.dstAddress.copy(RadioAddress.fromHex(dstAddress));
-
-            print(
-                "received packet ${packet.srcAddress.toHex()} ${packet.dstAddress.toHex()}");
-
             _packetStreamController.add(packet);
           }
           break;

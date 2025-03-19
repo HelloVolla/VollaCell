@@ -15,8 +15,8 @@ import 'package:kaonic/data/models/radio_packet.dart';
 import 'package:kaonic/service/mesh_service.dart';
 
 class CallService {
-  static const eventChannel = EventChannel('com.example.kaonic/audioStream');
-  static const platform = MethodChannel('com.example.kaonic/kaonic');
+  static const eventChannel = EventChannel('network.beechat.app.kaonic/audioStream');
+  static const platform = MethodChannel('network.beechat.app.kaonic/kaonic');
   static const sampleRate = 4800;
   // static const Codec codec = Codec.pcm16;
   static const timeoutDuration = Duration(seconds: 10);
@@ -96,7 +96,7 @@ class CallService {
       }
     });
 
-    platform.invokeMethod('startAudio');
+    await platform.invokeMethod('startAudio');
   }
 
   Future<void> stopAudio() async {

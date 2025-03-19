@@ -8,7 +8,7 @@ class UserService {
       : _userRepository = userRepository;
 
   final UserRepository _userRepository;
-  static const platform = MethodChannel('com.example.kaonic/kaonic');
+  static const platform = MethodChannel('network.beechat.app.kaonic/kaonic');
   UserModel? _user;
   UserModel? get user => _user;
 

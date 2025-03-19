@@ -92,9 +92,13 @@ class AndroidAudio(private val context: Context) {
 
         playingThread = Thread({ writeAudioData() }, "AudioPlayer Thread")
         playingThread!!.start()
+
+        Log.d(TAG, "start playing");
     }
 
     fun stopPlaying() {
+        Log.d(TAG, "stop playing");
+
         if (audioTrack.state == AudioTrack.STATE_INITIALIZED) {
             audioTrack.stop()
         }
@@ -113,9 +117,11 @@ class AndroidAudio(private val context: Context) {
 
     fun play(data: ByteArray?, length: Int) {
         circularBuffer.write(data!!, 0, length);
+        // audioTrack.write(data!!, 0, length);
     }
 
     fun startRecording() {
+        Log.d(TAG, "start recording");
         if (audioRecord.state != AudioRecord.STATE_INITIALIZED) {
             Log.e(TAG, "AudioRecord initialization failed")
             return
@@ -143,6 +149,7 @@ class AndroidAudio(private val context: Context) {
     }
 
     private fun readAudioData() {
+
         val audioBuffer = ByteArray(bufferSize)
 
         while (isRecording) {
@@ -160,6 +167,8 @@ class AndroidAudio(private val context: Context) {
     }
 
     fun stopRecording() {
+        Log.d(TAG, "stop recording");
+
         if (audioRecord.state == AudioRecord.STATE_INITIALIZED) {
             audioRecord.stop()
         }

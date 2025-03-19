@@ -232,9 +232,7 @@ async fn reticulum_task(
     let _client = KaonicGrpcInterface::start(
         reticulum::iface::kaonic::kaonic_grpc::KaonicGrpcConfig {
             // TODO: update host
-            // addr: "http://192.168.1.66:8080".into(),
-            // addr: "http://192.168.0.123:8080".into(),
-            addr: "http://192.168.72.1:8080".into(),
+            addr: "http://192.168.10.1:8080".into(),
             module: reticulum::iface::kaonic::RadioModule::RadioA,
         },
         transport.channel().await,
@@ -253,7 +251,6 @@ async fn reticulum_task(
                         let transport = transport.lock().await;
                         match cmd {
                             KaonicCommand::Message(msg) => {
-                                log::debug!("kaonic: send message to {}", msg.address_hash);
                                 transport.send_to_out_links(&msg.address_hash, msg.payload.as_slice()).await;
                             }
                         }

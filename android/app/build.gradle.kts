@@ -45,6 +45,7 @@ cargo {
     module  = "../../kaonic"
     libname = "kaonic"
     targets = listOf("arm", "arm64", "x86")
+    profile = "release"
 }
 
 project.afterEvaluate {
