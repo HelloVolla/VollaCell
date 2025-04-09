@@ -1,4 +1,4 @@
-package network.beechat.app.kaonic
+package com.volla.cell.kaonic
 
 import android.Manifest
 import android.content.Context
@@ -11,17 +11,17 @@ import androidx.core.content.ContextCompat
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodChannel
-import network.beechat.app.kaonic.Kaonic
+import com.volla.cell.kaonic.Kaonic
 
 class MainActivity : FlutterActivity() {
     private lateinit var kaonic: Kaonic
 
     private var serial: AndroidSerial? = null
-    private val CHANNEL = "network.beechat.app.kaonic/kaonic"
+    private val CHANNEL = "com.volla.cell.kaonic/kaonic"
     private val rxBuffer = ByteArray(2048)
 
-    private val CHANNEL_EVENT = "network.beechat.app.kaonic/audioStream"
-    private val KAONIC_EVENT = "network.beechat.app.kaonic/packetStream"
+    private val CHANNEL_EVENT = "com.volla.cell.kaonic/audioStream"
+    private val KAONIC_EVENT = "com.volla.cell.kaonic/packetStream"
     private var eventSink: EventChannel.EventSink? = null
     private var androidAudio: AndroidAudio? = null
 

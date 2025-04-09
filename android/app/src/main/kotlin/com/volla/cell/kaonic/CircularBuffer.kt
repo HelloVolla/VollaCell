@@ -1,4 +1,4 @@
-package network.beechat.app.kaonic
+package com.volla.cell.kaonic
 
 class CircularBuffer(size: Int) {
     private val buffer = ByteArray(size)

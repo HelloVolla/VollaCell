@@ -1,4 +1,4 @@
-package network.beechat.app.kaonic
+package com.volla.cell.kaonic
 
 import android.annotation.SuppressLint
 import android.content.Context
