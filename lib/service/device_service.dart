@@ -50,6 +50,12 @@ class DeviceService {
     return await platform.invokeMethod('userStart', {"key": userKey});
   }
 
+  Future<void> configure(String config) async {
+    final rc = await platform.invokeMethod('kaonicConfigure', {
+      "config": config,
+    });
+  }
+
   Future<void> transmit(RadioPacket packet) async {
     final packetBytes = packet.toBytes();
     if (packetBytes.length > 2048) {

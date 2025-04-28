@@ -71,6 +71,12 @@ class MainActivity : FlutterActivity() {
                     result.success(0)
                 }
 
+                "kaonicConfigure" -> {
+                    val config = call.argument<String>("config")
+                    kaonic.configure(config!!)
+                    result.success(0)
+                }
+
                 "startAudio"->{
                     Log.d("Main", "start audio");
                     androidAudio?.startPlaying()
