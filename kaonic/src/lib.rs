@@ -7,12 +7,18 @@ use reticulum::destination::link::{LinkEvent, LinkPayload};
 use reticulum::destination::{DestinationName, SingleInputDestination};
 use reticulum::hash::AddressHash;
 use reticulum::identity::PrivateIdentity;
-use reticulum::iface::kaonic::kaonic_grpc::KaonicGrpcInterface;
-use reticulum::transport::Transport;
+use reticulum::iface::kaonic::kaonic_grpc::proto::configuration_request::PhyConfig;
+use reticulum::iface::kaonic::kaonic_grpc::proto::radio_server::Radio;
+use reticulum::iface::kaonic::kaonic_grpc::proto::RadioPhyConfigOfdm;
+use reticulum::iface::kaonic::kaonic_grpc::KaonicGrpc;
+use reticulum::iface::kaonic::{RadioConfig, RadioModule};
+use reticulum::transport::{Transport, TransportConfig};
+use serde::Deserialize;
 use std::sync::Arc;
 use std::time::Duration;
 use tokio::runtime::{self, Runtime};
-use tokio::sync::{broadcast, mpsc, Mutex};
+use tokio::sync::mpsc::{channel, Sender};
+use tokio::sync::{mpsc, Mutex};
 
 use android_log;
 use log::{self, LevelFilter};
@@ -32,6 +38,7 @@ struct KaonicState {
     jni: KaonicJni,
     cmd_tx: tokio::sync::mpsc::Sender<KaonicCommand>,
     cmd_rx: Arc<Mutex<tokio::sync::mpsc::Receiver<KaonicCommand>>>,
+    config_channel: Sender<RadioConfig>,
     runtime: Arc<Runtime>,
 }
 
@@ -97,11 +104,13 @@ pub extern "system" fn Java_network_beechat_app_kaonic_Kaonic_nativeInit(
         }
     };
 
+    let (config_tx, _) = channel(1);
     let state = Box::new(KaonicState {
         jni,
         cmd_tx,
         cmd_rx: Arc::new(Mutex::new(cmd_rx)),
         runtime,
+        config_channel: config_tx,
     });
 
     Box::into_raw(state) as jlong
@@ -128,7 +137,7 @@ pub extern "system" fn Java_network_beechat_app_kaonic_Kaonic_nativeStart(
     identity: JString,
 ) {
     // Safety: ptr must be a valid pointer created by nativeInit
-    let state = unsafe { &*(ptr as *const KaonicState) };
+    let state = unsafe { &mut *(ptr as *mut KaonicState) };
 
     // Convert JString to Rust String
     let identity_hex: String = match env.get_string(&identity) {
@@ -147,9 +156,14 @@ pub extern "system" fn Java_network_beechat_app_kaonic_Kaonic_nativeStart(
             let jvm = env.get_java_vm().expect("Failed to get JavaVM");
             let jvm = Arc::new(jvm); // Wrap in Arc to share across threads
 
+            let (config_tx, config_rx) = channel(1);
+
+            state.config_channel = config_tx;
+
             state.runtime.spawn(reticulum_task(
                 identity,
                 state.cmd_rx.clone(),
+                config_rx,
                 Arc::clone(&jvm),
                 env.new_global_ref(obj).unwrap(),
                 state.jni.clone(),
@@ -206,16 +220,61 @@ pub extern "system" fn Java_network_beechat_app_kaonic_Kaonic_nativeTransmit(
         }));
 }
 
+#[derive(Deserialize)]
+struct ConfigData {
+    mcs: u32,
+    opt: u32,
+    module: i32,
+    freq: u32,
+    channel: u32,
+    channel_spacing: u32,
+    tx_power: u32,
+}
+
+#[no_mangle]
+pub extern "system" fn Java_network_beechat_app_kaonic_Kaonic_nativeConfigure(
+    mut env: JNIEnv,
+    _obj: JObject,
+    ptr: jlong,
+    config: JString,
+) {
+    let state = unsafe { &*(ptr as *const KaonicState) };
+
+    let config: String = match env.get_string(&config) {
+        Ok(jstr) => jstr.into(),
+        Err(_) => "".into(),
+    };
+
+    let config = serde_json::from_str::<ConfigData>(&config);
+
+    if let Ok(config) = config {
+        let _ = state.config_channel.blocking_send(RadioConfig {
+            module: config.module,
+            freq: config.freq,
+            channel: config.channel,
+            channel_spacing: config.channel_spacing,
+            tx_power: config.tx_power,
+            phy_config: Some(PhyConfig::Ofdm(RadioPhyConfigOfdm {
+                mcs: config.mcs,
+                opt: config.opt,
+            })),
+        });
+    } else if let Err(err) = config {
+        log::error!("can't parse config - {}", err);
+    }
+}
+
 async fn reticulum_task(
     identity: PrivateIdentity,
     cmd_rx: Arc<Mutex<mpsc::Receiver<KaonicCommand>>>,
+    config_channel: mpsc::Receiver<RadioConfig>,
     jvm: Arc<JavaVM>,
     obj: GlobalRef,
     jni: KaonicJni,
 ) {
     log::info!("start reticulum task");
 
-    let mut transport = Transport::new();
+    let mut transport = Transport::new(TransportConfig::default());
 
     let destination_list = KaonicDestinationList {
         contact: transport
@@ -229,13 +288,13 @@ async fn reticulum_task(
         destination_list.contact.lock().await.desc.address_hash
     );
 
-    let _client = KaonicGrpcInterface::start(
-        reticulum::iface::kaonic::kaonic_grpc::KaonicGrpcConfig {
-            // TODO: update host
-            addr: "http://192.168.10.1:8080".into(),
-            module: reticulum::iface::kaonic::RadioModule::RadioA,
-        },
-        transport.channel().await,
+    let _ = transport.iface_manager().lock().await.spawn(
+        KaonicGrpc::new(
+            format!("http://{}", "192.168.10.1:8080"),
+            RadioModule::RadioA,
+            Some(config_channel),
+        ),
+        KaonicGrpc::spawn,
     );
 
     let transport = Arc::new(Mutex::new(transport));
@@ -371,7 +430,11 @@ async fn reticulum_task(
                     .unwrap();
 
                 log::debug!("kaonic: send announce");
-                transport.lock().await.send(announce).await;
+                transport
+                    .lock()
+                    .await
+                    .send_announce(&destination_list.contact, None)
+                    .await;
             }
 
             tokio::time::sleep(Duration::from_secs(5)).await;
