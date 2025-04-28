@@ -23,7 +23,12 @@ class CustomRadioButton<T> extends StatelessWidget {
           label,
           style: TextStyles.text14.copyWith(color: Colors.white),
         ),
-        Radio(value: value, groupValue: groupValue, onChanged: onChanged)
+        Radio(
+          value: value,
+          groupValue: groupValue,
+          onChanged: onChanged,
+          activeColor: Colors.white,
+        )
       ],
     );
   }

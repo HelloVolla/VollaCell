@@ -4,10 +4,12 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:kaonic/data/models/settings.dart';
 import 'package:kaonic/generated/l10n.dart';
 import 'package:kaonic/src/settings/bloc/settings_bloc.dart';
+import 'package:kaonic/src/widgets/main_button.dart';
 import 'package:kaonic/src/widgets/main_text_field.dart';
 import 'package:kaonic/src/widgets/radio_button.dart';
 import 'package:kaonic/theme/assets.dart';
 import 'package:kaonic/theme/text_styles.dart';
+import 'package:kaonic/theme/theme.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -37,56 +39,74 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _appBar(),
-                    _item(
-                      S.current.radio,
-                      child: MainTextField(
-                        controller: _frequencyController,
+                    SizedBox(height: 16),
+                    Align(
+                      child: Text(
+                        S.current.radio,
+                        style:
+                            TextStyles.text18Bold.copyWith(color: Colors.white),
                       ),
                     ),
                     SizedBox(height: 16),
-                    _item(S.current.Frequency,
-                        child: DropdownButton<OFDMOptions>(
-                          items: OFDMOptions.values
-                              .map(
-                                (e) => DropdownMenuItem(
-                                  value: e,
-                                  child: Expanded(child: Text(e.toString())),
-                                ),
-                              )
-                              .toList(),
-                          onChanged: (value) {
-                            if (value != null) {
-                              ctxBloc
-                                  .read<SettingsBloc>()
-                                  .add(UpdateOption(option: value));
-                            }
-                          },
-                        )),
+                    _item(
+                      S.current.Frequency,
+                      child: MainTextField(
+                        controller: _frequencyController,
+                        hint: '',
+                        suffix: Text('kHz',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Colors.white,
+                            )),
+                      ),
+                    ),
                     SizedBox(height: 16),
                     _item(S.current.Channel,
-                        child: DropdownButton<int>(
-                          value: state.channel,
-                          items: List.generate(11, (index) => index + 1)
-                              .map(
-                                (e) => DropdownMenuItem(
-                                  value: e,
-                                  child: Text(e.toString()),
-                                ),
-                              )
-                              .toList(),
-                          onChanged: (value) {
-                            if (value != null) {
-                              ctxBloc
-                                  .read<SettingsBloc>()
-                                  .add(UpdateChannel(channel: value));
-                            }
-                          },
+                        child: Theme(
+                          data: Theme.of(context).copyWith(
+                            canvasColor: AppColors.grey2,
+                          ),
+                          child: DropdownButton<int>(
+                            value: state.channel,
+                            isExpanded: true,
+                            items: List.generate(11, (index) => index + 1)
+                                .map(
+                                  (e) => DropdownMenuItem(
+                                    value: e,
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [
+                                        Text(
+                                          e.toString(),
+                                          textAlign: TextAlign.end,
+                                          style: TextStyle(color: Colors.white),
+                                        ),
+                                        Padding(
+                                            padding: EdgeInsets.only(right: 16))
+                                      ],
+                                    ),
+                                  ),
+                                )
+                                .toList(),
+                            onChanged: (value) {
+                              if (value != null) {
+                                ctxBloc
+                                    .read<SettingsBloc>()
+                                    .add(UpdateChannel(channel: value));
+                              }
+                            },
+                          ),
                         )),
                     SizedBox(height: 16),
                     _item(S.current.ChannelSpacing,
                         child: MainTextField(
-                          controller: _spacingController,
-                        )),
+                            controller: _spacingController,
+                            hint: '',
+                            suffix: Text('kHz',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.white,
+                                )))),
                     SizedBox(height: 24),
                     _itemWithRadio(
                       S.current.OFDMOption,
@@ -94,7 +114,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           .map(
                             (e) => CustomRadioButton(
                                 label: e.name,
-                                onChanged: (_) {},
+                                onChanged: (value) {
+                                  if (value != null) {
+                                    ctxBloc
+                                        .read<SettingsBloc>()
+                                        .add(UpdateOption(option: value));
+                                  }
+                                },
                                 groupValue: state.option,
                                 value: e),
                           )
@@ -107,12 +133,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           .map(
                             (e) => CustomRadioButton(
                                 label: e.name,
-                                onChanged: (_) {},
-                                groupValue: state.option,
+                                onChanged: (value) {
+                                  if (value != null) {
+                                    ctxBloc
+                                        .read<SettingsBloc>()
+                                        .add(UpdateRate(rate: value));
+                                  }
+                                },
+                                groupValue: state.rate,
                                 value: e),
                           )
                           .toList(),
                     ),
+                    Padding(
+                      padding: EdgeInsets.only(top: 32.h),
+                      child: Align(
+                          child: MainButton(
+                        label: S.current.save,
+                        onPressed: () =>
+                            ctxBloc.read<SettingsBloc>().add(SaveSettings()),
+                      )),
+                    )
                   ],
                 ),
               ),
@@ -128,7 +169,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       Column(
         children: [
           Text(
-            S.current.OFDMOption,
+            label,
             style: TextStyles.text18Bold.copyWith(color: Colors.white),
           ),
           GridView(

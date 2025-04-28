@@ -390,10 +390,10 @@ class S {
     );
   }
 
-  /// `OFDM Rate`
+  /// `OFDM MCS`
   String get OFDMRate {
     return Intl.message(
-      'OFDM Rate',
+      'OFDM MCS',
       name: 'OFDMRate',
       desc: '',
       args: [],
@@ -445,6 +445,16 @@ class S {
     return Intl.message(
       'Settings',
       name: 'settings',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Save`
+  String get save {
+    return Intl.message(
+      'Save',
+      name: 'save',
       desc: '',
       args: [],
     );

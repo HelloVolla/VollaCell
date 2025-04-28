@@ -38,3 +38,6 @@ class UpdateRate extends SettingsEvent {
     required this.rate,
   });
 }
+
+
+final class SaveSettings extends SettingsEvent {}

@@ -33,10 +33,11 @@
     "Channel":"Channel",
     "ChannelSpacing":"Channel spacing",
     "OFDMOption":"OFDM Option",
-    "OFDMRate":"OFDM Rate",
+    "OFDMRate":"OFDM MCS",
     "opt1":"Option 1",
     "opt2":"Option 2",
     "opt3":"Option 3",
     "opt4":"Option 4",
-    "settings":"Settings"
+    "settings":"Settings",
+    "save":"Save"
   }

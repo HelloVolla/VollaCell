@@ -27,7 +27,7 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Channel spacing"),
         "Frequency": MessageLookupByLibrary.simpleMessage("Frequency"),
         "OFDMOption": MessageLookupByLibrary.simpleMessage("OFDM Option"),
-        "OFDMRate": MessageLookupByLibrary.simpleMessage("OFDM Rate"),
+        "OFDMRate": MessageLookupByLibrary.simpleMessage("OFDM MCS"),
         "back": MessageLookupByLibrary.simpleMessage("Back"),
         "createPasscode":
             MessageLookupByLibrary.simpleMessage("Create passcode"),
@@ -70,6 +70,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "radio": MessageLookupByLibrary.simpleMessage("Radio"),
         "repeatPasscode":
             MessageLookupByLibrary.simpleMessage("Repeat passcode"),
+        "save": MessageLookupByLibrary.simpleMessage("Save"),
         "settings": MessageLookupByLibrary.simpleMessage("Settings"),
         "signUp": MessageLookupByLibrary.simpleMessage("Sign up"),
         "userExistError": MessageLookupByLibrary.simpleMessage(
