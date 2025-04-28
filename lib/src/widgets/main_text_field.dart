@@ -10,12 +10,14 @@ class MainTextField extends StatelessWidget {
     this.onChange,
     this.controller,
     this.suffix,
+    this.keyboardType,
     super.key,
   });
   final String? hint;
   final ValueChanged<String>? onChange;
   final TextEditingController? controller;
   final Widget? suffix;
+  final TextInputType? keyboardType;
 
   final _baseBorder = OutlineInputBorder(
       borderRadius: BorderRadius.circular(22),
@@ -26,6 +28,7 @@ class MainTextField extends StatelessWidget {
     return TextField(
       onChanged: onChange,
       controller: controller,
+      keyboardType: keyboardType,
       cursorColor: AppColors.grey3,
       style: TextStyles.text14.copyWith(color: Colors.white),
       decoration: InputDecoration(
@@ -39,15 +42,7 @@ class MainTextField extends StatelessWidget {
         border: _baseBorder,
         enabledBorder: _baseBorder,
         focusedBorder: _baseBorder,
-        suffixIcon: suffix == null
-            ? null
-            : Align(
-                alignment: Alignment.centerRight,
-                child: Padding(
-                  padding: EdgeInsets.only(right: 16.w),
-                  child: suffix,
-                ),
-              ),
+        suffixIcon: suffix,
       ),
     );
   }

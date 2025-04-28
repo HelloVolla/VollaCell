@@ -30,6 +30,7 @@
     "pickFile":"Pick File",
     "radio":"Radio",
     "Frequency":"Frequency",
+    "txPower":"Tx Power",
     "Channel":"Channel",
     "ChannelSpacing":"Channel spacing",
     "OFDMOption":"OFDM Option",

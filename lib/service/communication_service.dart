@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:cryptography/cryptography.dart';
@@ -16,6 +17,9 @@ import 'package:kaonic/service/mesh_service.dart';
 class CommunicationService {
   CommunicationService({required DeviceService deviceService})
       : _deviceService = deviceService;
+  static const defaultFrequency = "869535";
+  static const defaultChannelSpacing = "200";
+  static const defaultTxPower = "10";
   final DeviceService _deviceService;
   MeshService? _meshService;
   StreamSubscription? _packetSubscription;
@@ -45,7 +49,7 @@ class CommunicationService {
   }
 
   Future<void> stopCall() async {
-   // await _meshService?.stopCurrentCall();
+    // await _meshService?.stopCurrentCall();
     await _callService?.stopCall();
   }
 
@@ -60,15 +64,36 @@ class CommunicationService {
   Future<void>? initiateCall(RadioAddress address) =>
       _meshService?.startCall(address);
 
-  Future<void>? sendFile(
-          MeshAddress address, String fileName, Uint8List? fileBytes, String filePath) =>
-      _meshService?.sendFile(address  , fileName, fileBytes, filePath);
+  Future<void>? sendFile(MeshAddress address, String fileName,
+          Uint8List? fileBytes, String filePath) =>
+      _meshService?.sendFile(address, fileName, fileBytes, filePath);
 
   void sendMessage(MeshAddress address, String message) =>
       _meshService?.sendMessage(address, message);
 
   void markMessageRead(MeshAddress address) =>
       _meshService?.markMessageRead(address.toHex());
+
+  void sendConfigs({
+    required int mcs,
+    required int optionNumber,
+    required int module,
+    required int frequency,
+    required int channel,
+    required int channelSpacing,
+    required int txPower,
+  }) {
+    final config = jsonEncode({
+      "mcs": mcs,
+      "opt": optionNumber,
+      "module": module,
+      "freq": frequency,
+      "channel": channel,
+      "channel_spacing": channelSpacing,
+      "tx_power": txPower,
+    });
+    _deviceService.configure(config);
+  }
 
   void _initMeshService() {
     if (_meshService == null) return;

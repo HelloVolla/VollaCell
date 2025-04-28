@@ -73,6 +73,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "save": MessageLookupByLibrary.simpleMessage("Save"),
         "settings": MessageLookupByLibrary.simpleMessage("Settings"),
         "signUp": MessageLookupByLibrary.simpleMessage("Sign up"),
+        "txPower": MessageLookupByLibrary.simpleMessage("Tx Power"),
         "userExistError": MessageLookupByLibrary.simpleMessage(
             "User with this username is already exist"),
         "username": MessageLookupByLibrary.simpleMessage("Username")

@@ -32,7 +32,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     add(_IntiChat());
   }
 
-  final CommunicationService _communicationService;
+    final CommunicationService _communicationService;
   final ChatArgs _args;
   late final StreamSubscription<Map<String, MeshChat>>? _chatSubscription;
 

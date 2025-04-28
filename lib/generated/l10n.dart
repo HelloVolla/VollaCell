@@ -360,6 +360,16 @@ class S {
     );
   }
 
+  /// `Tx Power`
+  String get txPower {
+    return Intl.message(
+      'Tx Power',
+      name: 'txPower',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Channel`
   String get Channel {
     return Intl.message(

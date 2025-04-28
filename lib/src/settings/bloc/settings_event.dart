@@ -18,6 +18,13 @@ class UpdateChannelSpacing extends SettingsEvent {
   });
 }
 
+class UpdateTxPower extends SettingsEvent {
+  final String txPower;
+  UpdateTxPower({
+    required this.txPower,
+  });
+}
+
 class UpdateOption extends SettingsEvent {
   final OFDMOptions option;
   UpdateOption({
