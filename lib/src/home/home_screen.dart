@@ -61,7 +61,10 @@ class HomeScreen extends StatelessWidget {
                             Navigator.of(context).pushNamed(Routes.findNearby);
                           }),
                       SizedBox(width: 10.w),
-                      CircleButton(icon: Assets.iconSettings, onTap: () {})
+                      CircleButton(
+                          icon: Assets.iconSettings,
+                          onTap: () =>
+                              Navigator.of(context).pushNamed(Routes.settings))
                     ],
                   ),
                   SizedBox(height: 20.h),

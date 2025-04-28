@@ -41,12 +41,14 @@ dev_dependencies:
   flutter_lints: ^5.0.0
   build_runner: ^2.0.0
   objectbox_generator: any
+  intl_utils: ^2.8.8
 
 dependency_overrides:
   js: ^0.7.1
 
 flutter:
   uses-material-design: true
+  generate: true
   assets:
     - assets/
     - assets/2.0x/

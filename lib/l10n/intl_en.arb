@@ -27,5 +27,16 @@
     "labelYes": "Yes",
     "labelCantFindAnyUsersNearby": "Can't find any users nearby",
     "labelSend": "Send",
-    "pickFile":"Pick File"
+    "pickFile":"Pick File",
+    "radio":"Radio",
+    "Frequency":"Frequency",
+    "Channel":"Channel",
+    "ChannelSpacing":"Channel spacing",
+    "OFDMOption":"OFDM Option",
+    "OFDMRate":"OFDM Rate",
+    "opt1":"Option 1",
+    "opt2":"Option 2",
+    "opt3":"Option 3",
+    "opt4":"Option 4",
+    "settings":"Settings"
   }

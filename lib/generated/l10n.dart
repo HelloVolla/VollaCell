@@ -339,6 +339,116 @@ class S {
       args: [],
     );
   }
+
+  /// `Radio`
+  String get radio {
+    return Intl.message(
+      'Radio',
+      name: 'radio',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Frequency`
+  String get Frequency {
+    return Intl.message(
+      'Frequency',
+      name: 'Frequency',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Channel`
+  String get Channel {
+    return Intl.message(
+      'Channel',
+      name: 'Channel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Channel spacing`
+  String get ChannelSpacing {
+    return Intl.message(
+      'Channel spacing',
+      name: 'ChannelSpacing',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `OFDM Option`
+  String get OFDMOption {
+    return Intl.message(
+      'OFDM Option',
+      name: 'OFDMOption',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `OFDM Rate`
+  String get OFDMRate {
+    return Intl.message(
+      'OFDM Rate',
+      name: 'OFDMRate',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Option 1`
+  String get opt1 {
+    return Intl.message(
+      'Option 1',
+      name: 'opt1',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Option 2`
+  String get opt2 {
+    return Intl.message(
+      'Option 2',
+      name: 'opt2',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Option 3`
+  String get opt3 {
+    return Intl.message(
+      'Option 3',
+      name: 'opt3',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Option 4`
+  String get opt4 {
+    return Intl.message(
+      'Option 4',
+      name: 'opt4',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Settings`
+  String get settings {
+    return Intl.message(
+      'Settings',
+      name: 'settings',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {
