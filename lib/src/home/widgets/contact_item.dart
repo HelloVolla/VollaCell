@@ -32,7 +32,8 @@ class ContactItem extends StatelessWidget {
             flex: 2,
             child: DecoratedBox(
               decoration: BoxDecoration(
-                  gradient: AppColors.yellowGradient,
+                  // gradient: AppColors.yellowGradient,
+                  color: AppColors.white,
                   borderRadius: BorderRadius.circular(42)),
               child: SizedBox(
                 height: 32,

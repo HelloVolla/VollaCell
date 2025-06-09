@@ -21,8 +21,10 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       : _communicationService = communicationService,
         _args = args,
         super(ChatState(
-            address: MeshAddress.fromRadio(
-                RadioAddress.fromHex(args.contact.address)))) {
+          address: MeshAddress.fromRadio(
+            RadioAddress.fromHex(args.contact.address),
+          ),
+        )) {
     on<SendMessage>(_sendMessage);
     on<_UpdatedChats>(_updatedChats);
     on<_IntiChat>(_intiChat);

@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:kaonic/theme/text_styles.dart';
+import 'package:kaonic/theme/theme.dart';
 import 'package:kaonic/utils/snackbar_util.dart';
 
 enum PasscodeMode {
@@ -62,39 +63,36 @@ class _PasscodeScreenState extends State<PasscodeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: ScreenContainer(
-        child: BlocProvider(
-          create: (context) => _bloc,
-          child: BlocListener<PasscodeBloc, PasscodeState>(
-            listener: _listenStates,
-            child: Padding(
-              padding: EdgeInsets.only(
-                  top: 10.h + MediaQuery.of(context).padding.top),
-              child: Column(
-                children: [
-                  const AppBackButton(),
-                  SizedBox(
-                    height: MediaQuery.of(context).size.height * 0.15,
+      backgroundColor: AppColors.dark,
+      body: BlocProvider(
+        create: (context) => _bloc,
+        child: BlocListener<PasscodeBloc, PasscodeState>(
+          listener: _listenStates,
+          child: Padding(
+            padding:
+                EdgeInsets.only(top: 10.h + MediaQuery.of(context).padding.top),
+            child: Column(
+              children: [
+                const AppBackButton(),
+                SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.15,
+                ),
+                BlocBuilder<PasscodeBloc, PasscodeState>(
+                  builder: (context, state) => Text(
+                    _title(state, context),
+                    style: TextStyles.text20Bold.copyWith(color: Colors.white),
                   ),
-                  BlocBuilder<PasscodeBloc, PasscodeState>(
-                    builder: (context, state) => Text(
-                      _title(state, context),
-                      style:
-                          TextStyles.text20Bold.copyWith(color: Colors.white),
-                    ),
+                ),
+                SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.1,
+                ),
+                BlocBuilder<PasscodeBloc, PasscodeState>(
+                  builder: (context, state) => PasscodeWidget(
+                    onChanged: (code) => _bloc.add(PasscodeChanged(code: code)),
+                    code: state.code,
                   ),
-                  SizedBox(
-                    height: MediaQuery.of(context).size.height * 0.1,
-                  ),
-                  BlocBuilder<PasscodeBloc, PasscodeState>(
-                    builder: (context, state) => PasscodeWidget(
-                      onChanged: (code) =>
-                          _bloc.add(PasscodeChanged(code: code)),
-                      code: state.code,
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),

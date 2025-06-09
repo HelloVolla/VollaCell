@@ -1,18 +1,21 @@
 import 'package:flutter/material.dart';
 
 final appThemeData = ThemeData(
-    fontFamily: 'Sansation',
+    // fontFamily: 'Sansation',
+    fontFamily: 'NotoSans',
     scaffoldBackgroundColor: AppColors.black,
     textSelectionTheme: const TextSelectionThemeData());
 
 abstract class AppColors {
   static const yellow = Color(0xFFF9C700);
+  static const white = Colors.white;
   static const orange = Color(0xFFF97F00);
   static const red = Color(0xFFF93600);
 
   static const negative = Color(0xFFE91C21);
   static const positive = Color(0xFF4BBB54);
 
+  static const dark = Colors.black;
   static const black = Color(0xFF1D1D1B);
   static const grey1 = Color(0xFF343434);
   static const grey2 = Color(0xFF4D4D4D);

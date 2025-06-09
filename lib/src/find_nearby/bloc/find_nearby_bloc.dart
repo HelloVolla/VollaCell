@@ -7,7 +7,6 @@ import 'package:kaonic/service/communication_service.dart';
 import 'package:kaonic/service/user_service.dart';
 import 'package:meta/meta.dart';
 
-
 part 'find_nearby_event.dart';
 part 'find_nearby_state.dart';
 

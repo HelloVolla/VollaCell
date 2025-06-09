@@ -11,11 +11,10 @@ import 'package:kaonic/src/chat/bloc/chat_bloc.dart';
 import 'package:kaonic/src/chat/chat_args.dart';
 import 'package:kaonic/src/chat/widgets/chat_item.dart';
 import 'package:kaonic/src/widgets/circle_button.dart';
-import 'package:kaonic/src/widgets/main_button.dart';
 import 'package:kaonic/src/widgets/main_text_field.dart';
-import 'package:kaonic/src/widgets/screen_container.dart';
 import 'package:kaonic/theme/assets.dart';
 import 'package:kaonic/theme/text_styles.dart';
+import 'package:kaonic/theme/theme.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -32,6 +31,7 @@ class _ChatScreenState extends State<ChatScreen> {
   final ScrollController _scrollController = ScrollController();
   late final ChatBloc _chatBloc;
   late final StreamSubscription? _fileSubscription;
+
   @override
   void initState() {
     _chatBloc = ChatBloc(
@@ -64,74 +64,78 @@ class _ChatScreenState extends State<ChatScreen> {
     return BlocProvider(
       create: (context) => _chatBloc,
       child: Scaffold(
-        body: ScreenContainer(
-          child: Padding(
-            padding: EdgeInsets.only(
-              left: 16.w,
-              right: 16.w,
-              top: 10.h + MediaQuery.of(context).padding.top,
-              bottom: 10.h + MediaQuery.of(context).padding.bottom,
-            ),
-            child: Column(
-              children: [
-                Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    const Align(
-                        alignment: Alignment.centerLeft,
-                        child: BackButton(
-                          color: Colors.white,
-                        )),
-                    Text(
-                      widget.args.contact.address.length>15? widget.args.contact.address.substring(0,15):widget.args.contact.address,
-                      textAlign: TextAlign.center,
-                      style: TextStyles.text24.copyWith(color: Colors.white),
-                    ),
-                    Align(
-                        alignment: Alignment.centerRight,
-                        child: CircleButton(
-                          icon: Assets.iconPhone,
-                          onTap: () {
-                            _chatBloc.add(InitiateCall());
-                          },
-                        )),
-                  ],
-                ),
-                SizedBox(height: 20.h),
-                Expanded(
-                  child: BlocConsumer<ChatBloc, ChatState>(
-                    listener: (context, state) {
-                      if (state is NavigateToCall) {
-                        Navigator.of(context).pushReplacementNamed(Routes.call);
-                        return;
-                      }
+        backgroundColor: AppColors.dark,
+        body: Padding(
+          padding: EdgeInsets.only(
+            left: 16.w,
+            right: 16.w,
+            top: 10.h + MediaQuery.of(context).padding.top,
+            bottom: 10.h + MediaQuery.of(context).padding.bottom,
+          ),
+          child: Column(
+            children: [
+              Stack(
+                alignment: Alignment.center,
+                children: [
+                  const Align(
+                      alignment: Alignment.centerLeft,
+                      child: BackButton(
+                        color: Colors.white,
+                      )),
+                  Text(
+                    widget.args.contact.address.length > 15
+                        ? widget.args.contact.address.substring(0, 15)
+                        : widget.args.contact.address,
+                    textAlign: TextAlign.center,
+                    style: TextStyles.text24.copyWith(color: Colors.white),
+                  ),
+                  Align(
+                      alignment: Alignment.centerRight,
+                      child: CircleButton(
+                        icon: Assets.iconPhone,
+                        onTap: () {
+                          _chatBloc.add(InitiateCall());
+                        },
+                      )),
+                ],
+              ),
+              SizedBox(height: 20.h),
+              Expanded(
+                child: BlocConsumer<ChatBloc, ChatState>(
+                  listener: (context, state) {
+                    if (state is NavigateToCall) {
+                      Navigator.of(context).pushReplacementNamed(Routes.call);
+                      return;
+                    }
 
-                      if (state.flagScrollToDown) {
-                        _scrollController
-                            .jumpTo(_scrollController.position.maxScrollExtent);
-                      }
-                    },
-                    builder: (context, state) {
-                      return Column(
-                        children: [
-                          Expanded(
-                              child: ListView.separated(
-                                  controller: _scrollController,
-                                  padding: EdgeInsets.zero,
-                                  itemBuilder: (context, index) => ChatItem(
-                                        message: state.messages[index],
-                                        myAddress: widget.args.contact.address,
-                                      ),
-                                  separatorBuilder: (context, index) =>
-                                      SizedBox(height: 10.h),
-                                  itemCount: state.messages.length)),
-                          SizedBox(height: 10.h),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              MainButton(
-                                label: S.of(context).pickFile,
-                                removePadding: true,
+                    if (state.flagScrollToDown) {
+                      _scrollController
+                          .jumpTo(_scrollController.position.maxScrollExtent);
+                    }
+                  },
+                  builder: (context, state) {
+                    return Column(
+                      children: [
+                        Expanded(
+                            child: ListView.separated(
+                                controller: _scrollController,
+                                padding: EdgeInsets.zero,
+                                itemBuilder: (context, index) => ChatItem(
+                                      message: state.messages[index],
+                                      myAddress: widget.args.contact.address,
+                                    ),
+                                separatorBuilder: (context, index) =>
+                                    SizedBox(height: 10.h),
+                                itemCount: state.messages.length)),
+                        SizedBox(height: 10.h),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            SizedBox(height: 10.h),
+                            MainTextField(
+                              hint: S.of(context).message,
+                              controller: _textController,
+                              prefix: IconButton(
                                 onPressed: () async {
                                   FilePickerResult? result =
                                       await FilePicker.platform.pickFiles();
@@ -139,40 +143,35 @@ class _ChatScreenState extends State<ChatScreen> {
                                     _chatBloc.add(FilePicked(file: result));
                                   }
                                 },
-                                width: 75,
+                                icon: Icon(
+                                  Icons.attach_file,
+                                  color: AppColors.white.withValues(alpha: 0.5),
+                                ),
                               ),
-                              SizedBox(height: 10.h),
-                              Row(
-                                children: [
-                                  Flexible(
-                                      child: MainTextField(
-                                    hint: 'Message...',
-                                    controller: _textController,
-                                  )),
-                                  SizedBox(width: 10.w),
-                                  MainButton(
-                                    label: S.of(context).labelSend,
-                                    removePadding: true,
-                                    onPressed: () {
-                                      if (_textController.text.isEmpty) return;
+                              suffix: IconButton(
+                                onPressed: () {
+                                  if (_textController.text.isEmpty) {
+                                    return;
+                                  }
 
-                                      _chatBloc.add(SendMessage(
-                                          message: _textController.text));
-                                      _textController.clear();
-                                    },
-                                    width: 75,
-                                  )
-                                ],
+                                  _chatBloc.add(SendMessage(
+                                      message: _textController.text));
+                                  _textController.clear();
+                                },
+                                icon: Icon(
+                                  Icons.arrow_forward_ios,
+                                  color: AppColors.white.withValues(alpha: 0.5),
+                                ),
                               ),
-                            ],
-                          )
-                        ],
-                      );
-                    },
-                  ),
-                )
-              ],
-            ),
+                            ),
+                          ],
+                        )
+                      ],
+                    );
+                  },
+                ),
+              )
+            ],
           ),
         ),
       ),

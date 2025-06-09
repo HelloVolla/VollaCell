@@ -9,7 +9,6 @@ import 'package:kaonic/data/models/user_model.dart';
 import 'package:kaonic/service/communication_service.dart';
 import 'package:kaonic/service/device_service.dart';
 import 'package:kaonic/service/user_service.dart';
-import 'package:meta/meta.dart';
 import 'package:objectbox/objectbox.dart';
 
 part 'home_event.dart';
@@ -66,7 +65,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       if (newUser == null) return;
       add(_UpdatedUser(user: newUser));
     });
-    
+
     _chatSubscription = _communicationService.chats?.listen(
       (event) {},
     );
@@ -82,7 +81,6 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   FutureOr<void> _updatedNodes(_UpdatedNodes event, Emitter<HomeState> emit) {
     emit(state.copyWith(nodes: event.nodes));
   }
-
 
   FutureOr<void> _handleCallStatus(
       _HandleCallStatus event, Emitter<HomeState> emit) {

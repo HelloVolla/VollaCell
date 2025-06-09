@@ -18,17 +18,20 @@ class S {
   static S? _current;
 
   static S get current {
-    assert(_current != null,
-        'No instance of S was loaded. Try to initialize the S delegate before accessing S.current.');
+    assert(
+      _current != null,
+      'No instance of S was loaded. Try to initialize the S delegate before accessing S.current.',
+    );
     return _current!;
   }
 
   static const AppLocalizationDelegate delegate = AppLocalizationDelegate();
 
   static Future<S> load(Locale locale) {
-    final name = (locale.countryCode?.isEmpty ?? false)
-        ? locale.languageCode
-        : locale.toString();
+    final name =
+        (locale.countryCode?.isEmpty ?? false)
+            ? locale.languageCode
+            : locale.toString();
     final localeName = Intl.canonicalizedLocale(name);
     return initializeMessages(localeName).then((_) {
       Intl.defaultLocale = localeName;
@@ -41,8 +44,10 @@ class S {
 
   static S of(BuildContext context) {
     final instance = S.maybeOf(context);
-    assert(instance != null,
-        'No instance of S present in the widget tree. Did you add S.delegate in localizationsDelegates?');
+    assert(
+      instance != null,
+      'No instance of S present in the widget tree. Did you add S.delegate in localizationsDelegates?',
+    );
     return instance!;
   }
 
@@ -52,32 +57,17 @@ class S {
 
   /// `Login`
   String get login {
-    return Intl.message(
-      'Login',
-      name: 'login',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Login', name: 'login', desc: '', args: []);
   }
 
   /// `Sign up`
   String get signUp {
-    return Intl.message(
-      'Sign up',
-      name: 'signUp',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Sign up', name: 'signUp', desc: '', args: []);
   }
 
   /// `Username`
   String get username {
-    return Intl.message(
-      'Username',
-      name: 'username',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Username', name: 'username', desc: '', args: []);
   }
 
   /// `Create username:`
@@ -92,12 +82,7 @@ class S {
 
   /// `Back`
   String get back {
-    return Intl.message(
-      'Back',
-      name: 'back',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Back', name: 'back', desc: '', args: []);
   }
 
   /// `Create passcode`
@@ -132,12 +117,7 @@ class S {
 
   /// `type...`
   String get hint {
-    return Intl.message(
-      'type...',
-      name: 'hint',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('type...', name: 'hint', desc: '', args: []);
   }
 
   /// `User with this username is already exist`
@@ -182,22 +162,12 @@ class S {
 
   /// `Hello to`
   String get labelHelloTo {
-    return Intl.message(
-      'Hello to',
-      name: 'labelHelloTo',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Hello to', name: 'labelHelloTo', desc: '', args: []);
   }
 
   /// `!`
   String get labelExclamationSign {
-    return Intl.message(
-      '!',
-      name: 'labelExclamationSign',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('!', name: 'labelExclamationSign', desc: '', args: []);
   }
 
   /// `Please save this file to be able to back up your account later.`
@@ -212,52 +182,27 @@ class S {
 
   /// `Address:`
   String get labelAddress {
-    return Intl.message(
-      'Address:',
-      name: 'labelAddress',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Address:', name: 'labelAddress', desc: '', args: []);
   }
 
   /// `Username:`
   String get labelUsername {
-    return Intl.message(
-      'Username:',
-      name: 'labelUsername',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Username:', name: 'labelUsername', desc: '', args: []);
   }
 
   /// `unknown`
   String get labelUnknown {
-    return Intl.message(
-      'unknown',
-      name: 'labelUnknown',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('unknown', name: 'labelUnknown', desc: '', args: []);
   }
 
   /// `Continue`
   String get labelContinue {
-    return Intl.message(
-      'Continue',
-      name: 'labelContinue',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Continue', name: 'labelContinue', desc: '', args: []);
   }
 
   /// `Identify`
   String get labelIdentify {
-    return Intl.message(
-      'Identify',
-      name: 'labelIdentify',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Identify', name: 'labelIdentify', desc: '', args: []);
   }
 
   /// `Contact List`
@@ -292,22 +237,12 @@ class S {
 
   /// `No`
   String get labelNo {
-    return Intl.message(
-      'No',
-      name: 'labelNo',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('No', name: 'labelNo', desc: '', args: []);
   }
 
   /// `Yes`
   String get labelYes {
-    return Intl.message(
-      'Yes',
-      name: 'labelYes',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Yes', name: 'labelYes', desc: '', args: []);
   }
 
   /// `Can't find any users nearby`
@@ -322,22 +257,47 @@ class S {
 
   /// `Send`
   String get labelSend {
+    return Intl.message('Send', name: 'labelSend', desc: '', args: []);
+  }
+
+  /// `Pick File`
+  String get pickFile {
+    return Intl.message('Pick File', name: 'pickFile', desc: '', args: []);
+  }
+
+  /// `Vola Messenger`
+  String get volaMessenger {
     return Intl.message(
-      'Send',
-      name: 'labelSend',
+      'Vola Messenger',
+      name: 'volaMessenger',
       desc: '',
       args: [],
     );
   }
 
-  /// `Pick File`
-  String get pickFile {
+  /// `Secured By`
+  String get securedBy {
+    return Intl.message('Secured By', name: 'securedBy', desc: '', args: []);
+  }
+
+  /// `Enter your username`
+  String get enterUserName {
     return Intl.message(
-      'Pick File',
-      name: 'pickFile',
+      'Enter your username',
+      name: 'enterUserName',
       desc: '',
       args: [],
     );
+  }
+
+  /// `User`
+  String get user {
+    return Intl.message('User', name: 'user', desc: '', args: []);
+  }
+
+  /// `Message...`
+  String get message {
+    return Intl.message('Message...', name: 'message', desc: '', args: []);
   }
 }
 
@@ -345,9 +305,7 @@ class AppLocalizationDelegate extends LocalizationsDelegate<S> {
   const AppLocalizationDelegate();
 
   List<Locale> get supportedLocales {
-    return const <Locale>[
-      Locale.fromSubtags(languageCode: 'en'),
-    ];
+    return const <Locale>[Locale.fromSubtags(languageCode: 'en')];
   }
 
   @override

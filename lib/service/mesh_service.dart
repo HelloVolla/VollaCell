@@ -68,6 +68,7 @@ class MeshService {
   void _updateChatWithTextMessage({
     required String address,
     required String message,
+    DateTime? sentAt,
     bool isMyMessage = false,
   }) {
     final Map<String, MeshChat> newChats = Map.from(_chats.value);
@@ -75,8 +76,10 @@ class MeshService {
       messages: [
         ...newChats[address]?.messages ?? [],
         MeshTextMessage(
-            senderAddress: isMyMessage ? _address.toHex() : address,
-            message: message)
+          sentAt: sentAt,
+          senderAddress: isMyMessage ? _address.toHex() : address,
+          message: message,
+        )
       ],
       unreadMessagesCount: (newChats[address]?.unreadMessagesCount ?? 0) + 1,
     );
@@ -91,6 +94,7 @@ class MeshService {
   }) {
     final Map<String, MeshChat> newChats = Map.from(_chats.value);
     final fileMessage = MeshFileMessage(
+        sentAt: null,
         senderAddress: _address.toHex(),
         localPath: filePath,
         fileName: fileName);
@@ -507,6 +511,7 @@ class MeshService {
       messages: [
         ...newChats[address]?.messages ?? [],
         MeshFileMessage(
+            sentAt: null,
             senderAddress: packet.srcAddress.toHex(),
             localPath: null,
             fileName: utf8.decode(payload))

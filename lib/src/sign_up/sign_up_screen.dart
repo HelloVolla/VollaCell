@@ -5,10 +5,10 @@ import 'package:kaonic/generated/l10n.dart';
 import 'package:kaonic/routes.dart';
 import 'package:kaonic/src/sign_up/bloc/sign_up_bloc.dart';
 import 'package:kaonic/src/widgets/back_button.dart';
-import 'package:kaonic/src/widgets/main_button.dart';
 import 'package:kaonic/src/widgets/main_text_field.dart';
-import 'package:kaonic/src/widgets/screen_container.dart';
+import 'package:kaonic/src/widgets/solid_button.dart';
 import 'package:kaonic/theme/text_styles.dart';
+import 'package:kaonic/theme/theme.dart';
 import 'package:kaonic/utils/snackbar_util.dart';
 
 class SignUpScreen extends StatefulWidget {
@@ -46,13 +46,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
     return BlocProvider(
       create: (context) => _bloc,
       child: Scaffold(
+        backgroundColor: AppColors.dark,
         body: SingleChildScrollView(
           child: BlocListener<SignUpBloc, SignUpState>(
             listenWhen: (previous, current) =>
                 current is SignUpUsernameExistError ||
                 current is SignUpUserCreated,
             listener: _listenStates,
-            child: ScreenContainer(
+            child: SizedBox(
+              height: 1.sh,
               child: Flex(
                 direction: Axis.vertical,
                 children: [
@@ -77,6 +79,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             SizedBox(
                                 width: MediaQuery.of(context).size.width * 0.85,
                                 child: MainTextField(
+                                  hint: S.of(context).enterUserName,
                                   controller: usernameController,
                                   onChange: (value) => _bloc
                                       .add(UsernameChanged(username: value)),
@@ -84,9 +87,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           ],
                         ),
                         BlocBuilder<SignUpBloc, SignUpState>(
-                          builder: (context, state) => MainButton(
-                            label: S.of(context).signUp,
-                            onPressed: state.signUpBtnEnabled
+                          builder: (context, state) => SolidButton(
+                            margin: EdgeInsets.symmetric(horizontal: 32),
+                            textButton: S.of(context).signUp,
+                            onTap: state.signUpBtnEnabled
                                 ? () => _createPasscode(
                                     context, usernameController.text)
                                 : null,
