@@ -12,9 +12,21 @@ import io.flutter.embedding.android.FlutterActivity
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodChannel
 import network.beechat.app.kaonic.Kaonic
+import network.beechat.app.kaonic.services.KaonicService
+import network.beechat.app.kaonic.services.SecureStorageHelper
+import network.beechat.kaonic.communication.KaonicCommunicationManager
+import network.beechat.kaonic.impl.KaonicLib
 
 class MainActivity : FlutterActivity() {
+    companion object {
+        private const val REQUEST_RECORD_AUDIO_PERMISSION = 200
+        private const val REQUEST_STORAGE_PERMISSION = 201
+    }
+
     private lateinit var kaonic: Kaonic
+    lateinit var secureStorageHelper: SecureStorageHelper
+
+
 
     private var serial: AndroidSerial? = null
     private val CHANNEL = "network.beechat.app.kaonic/kaonic"
@@ -25,24 +37,30 @@ class MainActivity : FlutterActivity() {
     private var eventSink: EventChannel.EventSink? = null
     private var androidAudio: AndroidAudio? = null
 
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        secureStorageHelper = SecureStorageHelper(applicationContext)
         kaonic = Kaonic(this)
         serial = AndroidSerial(this)
 
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
-            != PackageManager.PERMISSION_GRANTED
-        ) {
-            // Request permission
-            ActivityCompat.requestPermissions(
-                this,
-                arrayOf(Manifest.permission.RECORD_AUDIO),
-                1
-            )
-        }else{
-            initAudio()
-        }
+
+        checkAudioPermission()
+
+//        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
+//            != PackageManager.PERMISSION_GRANTED
+//        ) {
+//            // Request permission
+//            ActivityCompat.requestPermissions(
+//                this,
+//                arrayOf(Manifest.permission.RECORD_AUDIO),
+//                1
+//            )
+//        }else{
+//            initAudio()
+//        }
 
 
         MethodChannel(
@@ -50,6 +68,20 @@ class MainActivity : FlutterActivity() {
             CHANNEL
         ).setMethodCallHandler { call, result ->
             when (call.method) {
+                "sendTextMessage" -> {
+                    val textMessage = call.argument<String>("message") ?: ""
+                    val address = call.argument<String>("address") ?: ""
+                    val chatId = call.argument<String>("chatId") ?: ""
+
+                    KaonicService.sendTextMessage(textMessage, address, chatId)
+                }
+                "sendFileMessage" -> {
+                    val filePath = call.argument<String>("filePath") ?: ""
+                    val address = call.argument<String>("address") ?: ""
+                    val chatId = call.argument<String>("chatId") ?: ""
+
+                    KaonicService.sendFileMessage(filePath, address, chatId)
+                }
                 "enumerateDevices" -> result.success(enumerateDevices())
                 "openDevice" -> {
                     val deviceName = call.argument<String>("deviceName")
@@ -169,6 +201,50 @@ class MainActivity : FlutterActivity() {
                     }
                 }
             )
+    }
+
+
+
+    private fun checkAudioPermission() {
+        if (ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.RECORD_AUDIO
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.RECORD_AUDIO),
+                REQUEST_RECORD_AUDIO_PERMISSION
+            )
+        } else {
+            initKaonicService()
+        }
+    }
+
+
+    private fun initKaonicService() {
+        checkStoragePermission()
+        KaonicService.init(
+            KaonicCommunicationManager(
+                KaonicLib.getInstance(applicationContext),
+                contentResolver
+            ),
+            secureStorageHelper
+        )
+    }
+
+    private fun checkStoragePermission() {
+        if (ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                REQUEST_STORAGE_PERMISSION
+            )
+        }
     }
 }
 
