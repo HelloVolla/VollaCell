@@ -22,53 +22,66 @@ class MessageLookup extends MessageLookupByLibrary {
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
-    "back": MessageLookupByLibrary.simpleMessage("Back"),
-    "createPasscode": MessageLookupByLibrary.simpleMessage("Create passcode"),
-    "createUsername": MessageLookupByLibrary.simpleMessage("Create username:"),
-    "enterPasscode": MessageLookupByLibrary.simpleMessage("Enter passcode"),
-    "enterUserName": MessageLookupByLibrary.simpleMessage(
-      "Enter your username",
-    ),
-    "hint": MessageLookupByLibrary.simpleMessage("type..."),
-    "invalidPasscode": MessageLookupByLibrary.simpleMessage("Invalid passcode"),
-    "labelAddThisUserToContactList": MessageLookupByLibrary.simpleMessage(
-      "Add this user to Contact List?",
-    ),
-    "labelAddress": MessageLookupByLibrary.simpleMessage("Address:"),
-    "labelCantFindAnyUsersNearby": MessageLookupByLibrary.simpleMessage(
-      "Can\'t find any users nearby",
-    ),
-    "labelContactList": MessageLookupByLibrary.simpleMessage("Contact List"),
-    "labelContinue": MessageLookupByLibrary.simpleMessage("Continue"),
-    "labelExclamationSign": MessageLookupByLibrary.simpleMessage("!"),
-    "labelHelloTo": MessageLookupByLibrary.simpleMessage("Hello to"),
-    "labelIdentify": MessageLookupByLibrary.simpleMessage("Identify"),
-    "labelNo": MessageLookupByLibrary.simpleMessage("No"),
-    "labelPleaseSaveThisFile": MessageLookupByLibrary.simpleMessage(
-      "Please save this file to be able to back up your account later.",
-    ),
-    "labelSend": MessageLookupByLibrary.simpleMessage("Send"),
-    "labelUnknown": MessageLookupByLibrary.simpleMessage("unknown"),
-    "labelUsername": MessageLookupByLibrary.simpleMessage("Username:"),
-    "labelUsersNearby": MessageLookupByLibrary.simpleMessage("Users nearby"),
-    "labelYes": MessageLookupByLibrary.simpleMessage("Yes"),
-    "login": MessageLookupByLibrary.simpleMessage("Login"),
-    "loginFailure": MessageLookupByLibrary.simpleMessage(
-      "User does not exist or passcode is incorrect",
-    ),
-    "message": MessageLookupByLibrary.simpleMessage("Message..."),
-    "passcodeNotMatch": MessageLookupByLibrary.simpleMessage(
-      "Passcode did not match",
-    ),
-    "pickFile": MessageLookupByLibrary.simpleMessage("Pick File"),
-    "repeatPasscode": MessageLookupByLibrary.simpleMessage("Repeat passcode"),
-    "securedBy": MessageLookupByLibrary.simpleMessage("Secured By"),
-    "signUp": MessageLookupByLibrary.simpleMessage("Sign up"),
-    "user": MessageLookupByLibrary.simpleMessage("User"),
-    "userExistError": MessageLookupByLibrary.simpleMessage(
-      "User with this username is already exist",
-    ),
-    "username": MessageLookupByLibrary.simpleMessage("Username"),
-    "volaMessenger": MessageLookupByLibrary.simpleMessage("Vola Messenger"),
-  };
+        "Channel": MessageLookupByLibrary.simpleMessage("Channel"),
+        "ChannelSpacing":
+            MessageLookupByLibrary.simpleMessage("Channel spacing"),
+        "Frequency": MessageLookupByLibrary.simpleMessage("Frequency"),
+        "OFDMOption": MessageLookupByLibrary.simpleMessage("OFDM Option"),
+        "OFDMRate": MessageLookupByLibrary.simpleMessage("OFDM MCS"),
+        "back": MessageLookupByLibrary.simpleMessage("Back"),
+        "createPasscode":
+            MessageLookupByLibrary.simpleMessage("Create passcode"),
+        "createUsername":
+            MessageLookupByLibrary.simpleMessage("Create username:"),
+        "enterPasscode": MessageLookupByLibrary.simpleMessage("Enter passcode"),
+        "enterUserName":
+            MessageLookupByLibrary.simpleMessage("Enter your username"),
+        "hint": MessageLookupByLibrary.simpleMessage("type..."),
+        "invalidPasscode":
+            MessageLookupByLibrary.simpleMessage("Invalid passcode"),
+        "labelAddThisUserToContactList": MessageLookupByLibrary.simpleMessage(
+            "Add this user to Contact List?"),
+        "labelAddress": MessageLookupByLibrary.simpleMessage("Address:"),
+        "labelCantFindAnyUsersNearby": MessageLookupByLibrary.simpleMessage(
+            "Can\'t find any users nearby"),
+        "labelContactList":
+            MessageLookupByLibrary.simpleMessage("Contact List"),
+        "labelContinue": MessageLookupByLibrary.simpleMessage("Continue"),
+        "labelExclamationSign": MessageLookupByLibrary.simpleMessage("!"),
+        "labelHelloTo": MessageLookupByLibrary.simpleMessage("Hello to"),
+        "labelIdentify": MessageLookupByLibrary.simpleMessage("Identify"),
+        "labelNo": MessageLookupByLibrary.simpleMessage("No"),
+        "labelPleaseSaveThisFile": MessageLookupByLibrary.simpleMessage(
+            "Please save this file to be able to back up your account later."),
+        "labelSend": MessageLookupByLibrary.simpleMessage("Send"),
+        "labelUnknown": MessageLookupByLibrary.simpleMessage("unknown"),
+        "labelUsername": MessageLookupByLibrary.simpleMessage("Username:"),
+        "labelUsersNearby":
+            MessageLookupByLibrary.simpleMessage("Users nearby"),
+        "labelYes": MessageLookupByLibrary.simpleMessage("Yes"),
+        "login": MessageLookupByLibrary.simpleMessage("Login"),
+        "loginFailure": MessageLookupByLibrary.simpleMessage(
+            "User does not exist or passcode is incorrect"),
+        "message": MessageLookupByLibrary.simpleMessage("Message..."),
+        "opt1": MessageLookupByLibrary.simpleMessage("Option 1"),
+        "opt2": MessageLookupByLibrary.simpleMessage("Option 2"),
+        "opt3": MessageLookupByLibrary.simpleMessage("Option 3"),
+        "opt4": MessageLookupByLibrary.simpleMessage("Option 4"),
+        "passcodeNotMatch":
+            MessageLookupByLibrary.simpleMessage("Passcode did not match"),
+        "pickFile": MessageLookupByLibrary.simpleMessage("Pick File"),
+        "radio": MessageLookupByLibrary.simpleMessage("Radio"),
+        "repeatPasscode":
+            MessageLookupByLibrary.simpleMessage("Repeat passcode"),
+        "save": MessageLookupByLibrary.simpleMessage("Save"),
+        "securedBy": MessageLookupByLibrary.simpleMessage("Secured By"),
+        "settings": MessageLookupByLibrary.simpleMessage("Settings"),
+        "signUp": MessageLookupByLibrary.simpleMessage("Sign up"),
+        "txPower": MessageLookupByLibrary.simpleMessage("Tx Power"),
+        "user": MessageLookupByLibrary.simpleMessage("User"),
+        "userExistError": MessageLookupByLibrary.simpleMessage(
+            "User with this username is already exist"),
+        "username": MessageLookupByLibrary.simpleMessage("Username"),
+        "volaMessenger": MessageLookupByLibrary.simpleMessage("Vola Messenger")
+      };
 }

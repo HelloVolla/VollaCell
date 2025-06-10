@@ -32,5 +32,18 @@
   "securedBy": "Secured By",
   "enterUserName": "Enter your username",
   "user": "User",
-  "message": "Message..."
+  "message": "Message...",
+  "radio": "Radio",
+  "Frequency": "Frequency",
+  "txPower": "Tx Power",
+  "Channel": "Channel",
+  "ChannelSpacing": "Channel spacing",
+  "OFDMOption": "OFDM Option",
+  "OFDMRate": "OFDM MCS",
+  "opt1": "Option 1",
+  "opt2": "Option 2",
+  "opt3": "Option 3",
+  "opt4": "Option 4",
+  "settings": "Settings",
+  "save": "Save"
 }

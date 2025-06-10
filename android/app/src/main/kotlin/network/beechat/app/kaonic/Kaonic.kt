@@ -8,31 +8,32 @@ import android.util.Log
 import io.flutter.plugin.common.EventChannel
 
 class Kaonic(context: Context) {
-    private val nativePtr: Long
+    private val nativePtr: Long=0
 
     var eventSink: EventChannel.EventSink? = null
 
     init {
-        nativePtr = nativeInit(context)
+//        nativePtr = nativeInit(context)
     }
 
     protected fun finalize() {
         if (nativePtr != 0L) {
-            nativeDestroy(nativePtr)
+//            nativeDestroy(nativePtr)
         }
     }
 
     public fun generateIdentity(): String {
-        return nativeGenerateIdentity(nativePtr)
+        return ""
+//        return nativeGenerateIdentity(nativePtr)
     }
 
     public fun start(identity: String) {
-        return nativeStart(nativePtr, identity)
+//        return nativeStart(nativePtr, identity)
     }
 
 
     public fun transmit(address: String, data: ByteArray) {
-        nativeTransmit(nativePtr, address, data);
+//        nativeTransmit(nativePtr, address, data);
     }
 
     public fun configure(config: String) {
@@ -74,8 +75,8 @@ class Kaonic(context: Context) {
 
     companion object {
         init {
-            System.loadLibrary("kaonic")
-            libraryInit()
+//            System.loadLibrary("kaonic")
+//            libraryInit()
         }
 
         @JvmStatic external fun libraryInit()

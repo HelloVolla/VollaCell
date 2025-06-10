@@ -48,16 +48,6 @@ cargo {
     profile = "release"
 }
 
-project.afterEvaluate {
-    tasks.withType(com.nishtahir.CargoBuildTask::class).forEach { buildTask ->
-        tasks.withType(com.android.build.gradle.tasks.MergeSourceSetFolders::class).configureEach {
-            this.inputs.dir(
-                layout.buildDirectory.dir("rustJniLibs" + File.separatorChar + buildTask.toolchain!!.folder)
-            )
-            this.dependsOn(buildTask)
-        }
-    }
-}
 
 dependencies {
     implementation("com.github.mik3y:usb-serial-for-android:3.8.0")

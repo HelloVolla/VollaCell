@@ -11,6 +11,7 @@ class MainTextField extends StatelessWidget {
     this.controller,
     this.suffix,
     this.prefix,
+    this.keyboardType,
     super.key,
   });
 
@@ -19,6 +20,7 @@ class MainTextField extends StatelessWidget {
   final TextEditingController? controller;
   final Widget? suffix;
   final Widget? prefix;
+  final TextInputType? keyboardType;
 
   // final _baseBorder = OutlineInputBorder(
   //     borderRadius: BorderRadius.circular(22),
@@ -34,6 +36,7 @@ class MainTextField extends StatelessWidget {
       controller: controller,
       // cursorColor: AppColors.grey3,
       cursorColor: AppColors.white,
+      keyboardType: keyboardType,
       style: TextStyles.text14.copyWith(color: Colors.white),
       decoration: InputDecoration(
         isDense: false,
@@ -48,6 +51,7 @@ class MainTextField extends StatelessWidget {
         contentPadding: EdgeInsets.symmetric(vertical: 13.h, horizontal: 32.w),
         border: InputBorder.none,
         focusedBorder: _baseBorder,
+        // suffixIcon: suffix,
       ),
     );
   }
