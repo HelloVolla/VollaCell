@@ -2,6 +2,7 @@ package network.beechat.app.kaonic.services
 
 import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
+import com.fasterxml.jackson.databind.ObjectMapper
 import io.flutter.plugin.common.EventChannel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -12,17 +13,20 @@ import network.beechat.kaonic.communication.KaonicCommunicationManager
 import network.beechat.kaonic.communication.KaonicEventListener
 import network.beechat.kaonic.models.KaonicEvent
 import network.beechat.kaonic.models.KaonicEventData
-import network.beechat.kaonic.models.KaonicEventType
 import network.beechat.kaonic.models.connection.Connection
 import network.beechat.kaonic.models.connection.ConnectionConfig
 import network.beechat.kaonic.models.connection.ConnectionContact
 import network.beechat.kaonic.models.connection.ConnectionInfo
 import network.beechat.kaonic.models.connection.ConnectionType
+import network.beechat.kaonic.models.messages.ChatCreateEvent
+import network.beechat.kaonic.models.messages.MessageFileEvent
+import network.beechat.kaonic.models.messages.MessageTextEvent
 
 object KaonicService : KaonicEventListener {
     private val TAG = "KaonicService"
     private lateinit var kaonicCommunicationHandler: KaonicCommunicationManager
     private lateinit var secureStorageHelper: SecureStorageHelper
+    private val objectMapper: ObjectMapper = ObjectMapper()
 
     /// list of nodes
     private val _contacts = mutableStateListOf<String>()
@@ -99,11 +103,10 @@ object KaonicService : KaonicEventListener {
     override fun onEventReceived(event: KaonicEvent<KaonicEventData>) {
         CoroutineScope(Dispatchers.Default).launch {
             // Log.i(TAG, "onEventReceived ${event.data.javaClass.name}")
-            val resultData: HashMap<String, Any> = HashMap()
-            resultData["type"] = event.type
-            resultData["address"] = event.data.address
-            resultData["timestamp"] = event.data.timestamp
-            eventSink?.success(resultData)
+
+            val jsonString = objectMapper.writeValueAsString(event)
+
+            eventSink?.success(jsonString)
 
 //            when (event.type) {
 //                KaonicEventType.MESSAGE_TEXT, KaonicEventType.MESSAGE_FILE,

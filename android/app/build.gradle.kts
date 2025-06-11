@@ -63,6 +63,7 @@ dependencies {
     implementation(files("libs/kaonic-plugin.aar"))
     implementation("com.github.mik3y:usb-serial-for-android:3.8.0")
     implementation("androidx.compose.runtime:runtime:1.8.2")
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.19.0")
 }
 
 flutter {

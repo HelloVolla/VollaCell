@@ -6,12 +6,18 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import androidx.annotation.Keep
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodChannel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import network.beechat.app.kaonic.Kaonic
+import network.beechat.app.kaonic.services.ChatService
 import network.beechat.app.kaonic.services.KaonicService
 import network.beechat.app.kaonic.services.SecureStorageHelper
 import network.beechat.kaonic.communication.KaonicCommunicationManager
@@ -24,9 +30,10 @@ class MainActivity : FlutterActivity() {
     }
 
     private lateinit var kaonic: Kaonic
+    private lateinit var chatService: ChatService
     lateinit var secureStorageHelper: SecureStorageHelper
 
-
+    val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     private var serial: AndroidSerial? = null
     private val CHANNEL = "network.beechat.app.kaonic/kaonic"
@@ -48,6 +55,7 @@ class MainActivity : FlutterActivity() {
         secureStorageHelper = SecureStorageHelper(applicationContext)
         kaonic = Kaonic(this)
         serial = AndroidSerial(this)
+        chatService = ChatService(appScope)
 
 
         checkAudioPermission()
@@ -75,9 +83,7 @@ class MainActivity : FlutterActivity() {
                     try {
                         val textMessage = call.argument<String>("message") ?: ""
                         val address = call.argument<String>("address") ?: ""
-                        val chatId = call.argument<String>("chatId") ?: ""
-
-                        KaonicService.sendTextMessage(textMessage, address, chatId)
+                        chatService.sendTextMessage(textMessage, address)
 
                         result.success(0)
                     }  catch (ex: Exception){
@@ -89,9 +95,7 @@ class MainActivity : FlutterActivity() {
                     try {
                         val filePath = call.argument<String>("filePath") ?: ""
                         val address = call.argument<String>("address") ?: ""
-                        val chatId = call.argument<String>("chatId") ?: ""
-
-                        KaonicService.sendFileMessage(filePath, address, chatId)
+                        chatService.sendFileMessage(filePath, address)
 
                         result.success(0)
                     }  catch (ex: Exception){
@@ -120,14 +124,23 @@ class MainActivity : FlutterActivity() {
                 "createChat" -> {
                     try {
                         val address = call.argument<String>("address") ?: ""
-                        val chatId = call.argument<String>("chatId") ?: ""
+                        val chatId = chatService.createChatWithAddress(address)
 
-                        KaonicService.createChat(address, chatId)
-
-                        result.success(0)
+                        result.success(chatId)
                     }  catch (ex: Exception){
                         Log.d("createChat", ex.toString())
                         result.error("createChat", ex.message, "")
+                    }
+                }
+                "getChatMessages" -> {
+                    try {
+                        val chatId = call.argument<String>("chatId") ?: ""
+                        val messages = chatService.getChatMessages(chatId)
+
+                        result.success(messages)
+                    }  catch (ex: Exception){
+                        Log.d("getChatMessages", ex.toString())
+                        result.error("getChatMessages", ex.message, "")
                     }
                 }
 
