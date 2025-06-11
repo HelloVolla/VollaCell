@@ -38,6 +38,9 @@ class MainActivity : FlutterActivity() {
     private var androidAudio: AndroidAudio? = null
 
 
+    private val KAONIC_SERVICE_EVENT = "network.beechat.app.kaonic.service/packetStream"
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -69,20 +72,70 @@ class MainActivity : FlutterActivity() {
         ).setMethodCallHandler { call, result ->
             when (call.method) {
                 "sendTextMessage" -> {
-                    val textMessage = call.argument<String>("message") ?: ""
-                    val address = call.argument<String>("address") ?: ""
-                    val chatId = call.argument<String>("chatId") ?: ""
+                    try {
+                        val textMessage = call.argument<String>("message") ?: ""
+                        val address = call.argument<String>("address") ?: ""
+                        val chatId = call.argument<String>("chatId") ?: ""
 
-                    KaonicService.sendTextMessage(textMessage, address, chatId)
+                        KaonicService.sendTextMessage(textMessage, address, chatId)
+
+                        result.success(0)
+                    }  catch (ex: Exception){
+                        Log.d("sendTextMessageError", ex.toString())
+                        result.error("sendTextMessageError", ex.message, "")
+                    }
                 }
                 "sendFileMessage" -> {
-                    val filePath = call.argument<String>("filePath") ?: ""
-                    val address = call.argument<String>("address") ?: ""
-                    val chatId = call.argument<String>("chatId") ?: ""
+                    try {
+                        val filePath = call.argument<String>("filePath") ?: ""
+                        val address = call.argument<String>("address") ?: ""
+                        val chatId = call.argument<String>("chatId") ?: ""
 
-                    KaonicService.sendFileMessage(filePath, address, chatId)
+                        KaonicService.sendFileMessage(filePath, address, chatId)
+
+                        result.success(0)
+                    }  catch (ex: Exception){
+                        Log.d("sendFileMessage", ex.toString())
+                        result.error("sendFileMessage", ex.message, "")
+                    }
                 }
+                "sendConfigure" -> {
+                    try {
+                        val mcs = call.argument<Int>("mcs") ?: 0
+                        val optionNumber = call.argument<Int>("optionNumber") ?: 0
+                        val module = call.argument<Int>("module") ?: 0
+                        val frequency = call.argument<Int>("frequency") ?: 0
+                        val channel = call.argument<Int>("channel") ?: 0
+                        val channelSpacing = call.argument<Int>("channelSpacing") ?: 0
+                        val txPower = call.argument<Int>("txPower") ?: 0
+
+                        KaonicService.sendConfig(mcs, optionNumber, module, frequency, channel, channelSpacing, txPower)
+
+                        result.success(true)
+                    }  catch (ex: Exception){
+                        Log.d("sendConfigure", ex.toString())
+                        result.error("sendConfigure", ex.message, "")
+                    }
+                }
+                "createChat" -> {
+                    try {
+                        val address = call.argument<String>("address") ?: ""
+                        val chatId = call.argument<String>("chatId") ?: ""
+
+                        KaonicService.createChat(address, chatId)
+
+                        result.success(0)
+                    }  catch (ex: Exception){
+                        Log.d("createChat", ex.toString())
+                        result.error("createChat", ex.message, "")
+                    }
+                }
+
+
+                // Legacy methods
+                // Useless method
                 "enumerateDevices" -> result.success(enumerateDevices())
+                // Useless method
                 "openDevice" -> {
                     val deviceName = call.argument<String>("deviceName")
                     if (deviceName == null) result.success(false)
@@ -90,19 +143,20 @@ class MainActivity : FlutterActivity() {
                     result.success(openSerial(deviceName!!))
                 }
 
+                // Useless method
                 "closeDevice" -> {
                     closeSerial();
 
                     result.success(true)
                 }
-
+                // old method (new sendText/sendFile)
                 "kaonicTransmit" -> {
                     val address = call.argument<String>("address")
                     val data = call.argument<ByteArray>("data")
                     kaonic.transmit(address!!, data!!)
                     result.success(0)
                 }
-
+                // sendConfigure
                 "kaonicConfigure" -> {
                     val config = call.argument<String>("config")
                     kaonic.configure(config!!)
@@ -125,9 +179,11 @@ class MainActivity : FlutterActivity() {
                     androidAudio?.play(data,data?.size?:0)
                     result.success(0)
                 }
+                // load secret
                 "generateKey"->{
                     result.success(kaonic.generateIdentity())
                 }
+                // useless
                 "userStart"->{
                     val key = call.argument<String>("key")
                     key?.let{
@@ -138,6 +194,18 @@ class MainActivity : FlutterActivity() {
             }
         }
 
+        EventChannel(flutterEngine?.dartExecutor?.binaryMessenger, KAONIC_SERVICE_EVENT)
+            .setStreamHandler(
+                object : EventChannel.StreamHandler {
+                    override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
+                        KaonicService.eventSink = events
+                    }
+
+                    override fun onCancel(arguments: Any?) {
+                        KaonicService.eventSink = null
+                    }
+                }
+            )
 
         EventChannel(flutterEngine?.dartExecutor?.binaryMessenger, KAONIC_EVENT)
             .setStreamHandler(

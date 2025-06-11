@@ -2,6 +2,7 @@ package network.beechat.app.kaonic.services
 
 import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
+import io.flutter.plugin.common.EventChannel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -30,6 +31,7 @@ object KaonicService : KaonicEventListener {
     /// stream of kaonic events
     private val _events = MutableSharedFlow<KaonicEvent<KaonicEventData>>()
     val events: SharedFlow<KaonicEvent<KaonicEventData>> = _events
+    var eventSink: EventChannel.EventSink? = null
 
     private var _myAddress = ""
     val myAddress: String
