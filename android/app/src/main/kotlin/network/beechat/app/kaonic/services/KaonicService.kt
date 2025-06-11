@@ -18,9 +18,6 @@ import network.beechat.kaonic.models.connection.ConnectionConfig
 import network.beechat.kaonic.models.connection.ConnectionContact
 import network.beechat.kaonic.models.connection.ConnectionInfo
 import network.beechat.kaonic.models.connection.ConnectionType
-import network.beechat.kaonic.models.messages.ChatCreateEvent
-import network.beechat.kaonic.models.messages.MessageFileEvent
-import network.beechat.kaonic.models.messages.MessageTextEvent
 
 object KaonicService : KaonicEventListener {
     private val TAG = "KaonicService"
@@ -101,24 +98,9 @@ object KaonicService : KaonicEventListener {
     }
 
     override fun onEventReceived(event: KaonicEvent<KaonicEventData>) {
-        CoroutineScope(Dispatchers.Default).launch {
-            // Log.i(TAG, "onEventReceived ${event.data.javaClass.name}")
-
+        CoroutineScope(Dispatchers.Main).launch {
             val jsonString = objectMapper.writeValueAsString(event)
-
             eventSink?.success(jsonString)
-
-//            when (event.type) {
-//                KaonicEventType.MESSAGE_TEXT, KaonicEventType.MESSAGE_FILE,
-//                KaonicEventType.CHAT_CREATE -> {
-//                    _events.emit(event)
-//                }
-//
-//                KaonicEventType.CONTACT_FOUND -> {
-//                    if (!contacts.contains(event.data.address))
-//                        contacts.add(event.data.address)
-//                }
-//            }
         }
     }
 

@@ -20,7 +20,9 @@ class FindNearbyBloc extends Bloc<FindNearbyEvent, FindNearbyState> {
     on<AddContact>(_addContact);
 
     nodesSubscription = _communicationService.nodes.listen(
-      (nodes) => add(_DeviceListUpdated(devices: nodes)),
+      (nodes) {
+        add(_DeviceListUpdated(devices: nodes));
+      },
     );
   }
 

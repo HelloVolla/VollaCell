@@ -11,7 +11,7 @@ class KaonicCommunicationService {
   final kaonicMethodChannel =
       MethodChannel('network.beechat.app.kaonic/kaonic');
   final kaonicEventChannel =
-      EventChannel('network.beechat.app.kaonic/kaonicEventsStream');
+      EventChannel('network.beechat.app.kaonic.service/kaonicEvents');
 
   final _nodesSubject = BehaviorSubject<List<String>>();
   Stream<List<String>> get nodes => _nodesSubject.stream;
@@ -59,7 +59,7 @@ class KaonicCommunicationService {
   void _listenKaonicEvents(dynamic event) {
     try {
       final eventJson = jsonDecode(event) as Map<String, dynamic>;
-      if (eventJson.containsKey('type')) return;
+      if (!eventJson.containsKey('type')) return;
 
       final eventType = eventJson['type']?.toString() ?? '';
 
@@ -67,12 +67,18 @@ class KaonicCommunicationService {
       switch (eventType) {
         case KaonicEventType.CONTACT_FOUND:
           final address = eventJson.containsKey('data')
-              ? (event['data'] as Map<String, dynamic>)['address']
+              ? (eventJson['data'] as Map<String, dynamic>)['address']
                       ?.toString() ??
                   ''
               : '';
-          if (address.isNotEmpty && !_nodesSubject.value.contains(address)) {
-            _nodesSubject.add([..._nodesSubject.value, address]);
+          if (address.isNotEmpty &&
+              (!_nodesSubject.hasValue ||
+                  !_nodesSubject.value.contains(address))) {
+            if (_nodesSubject.hasValue) {
+              _nodesSubject.add([..._nodesSubject.value, address]);
+            } else {
+              _nodesSubject.add([address]);
+            }
           }
           return;
         case KaonicEventType.MESSAGE_TEXT:

@@ -59,8 +59,10 @@ class MeshService {
   Timer? _automaticallyEndCallTimer;
 
   MeshService(this._deviceService, this._key) {
+    // _address =
+    //     MeshAddress.fromRadio(RadioAddress.fromHex(_key.substring(64 * 2)));
     _address =
-        MeshAddress.fromRadio(RadioAddress.fromHex(_key.substring(64 * 2)));
+        MeshAddress.fromRadio(RadioAddress.fromHex(_key));
 
     print("start mesh service /${_address.toHex()}/");
   }

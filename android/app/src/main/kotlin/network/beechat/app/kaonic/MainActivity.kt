@@ -1,13 +1,10 @@
 package network.beechat.app.kaonic
 
 import android.Manifest
-import android.content.Context
 import android.content.pm.PackageManager
+import android.media.RingtoneManager
 import android.os.Bundle
 import android.util.Log
-import androidx.annotation.Keep
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import io.flutter.embedding.android.FlutterActivity
@@ -20,6 +17,7 @@ import network.beechat.app.kaonic.services.KaonicService
 import network.beechat.app.kaonic.services.SecureStorageHelper
 import network.beechat.kaonic.communication.KaonicCommunicationManager
 import network.beechat.kaonic.impl.KaonicLib
+import java.util.UUID
 
 class MainActivity : FlutterActivity() {
     companion object {
@@ -29,8 +27,6 @@ class MainActivity : FlutterActivity() {
 
     lateinit var secureStorageHelper: SecureStorageHelper
 
-    val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-
     private var serial: AndroidSerial? = null
     private val CHANNEL = "network.beechat.app.kaonic/kaonic"
 
@@ -39,7 +35,7 @@ class MainActivity : FlutterActivity() {
     private var eventSink: EventChannel.EventSink? = null
 
 
-    private val KAONIC_SERVICE_EVENT = "network.beechat.app.kaonic.service/packetStream"
+    private val KAONIC_SERVICE_EVENT = "network.beechat.app.kaonic.service/kaonicEvents"
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -54,6 +50,10 @@ class MainActivity : FlutterActivity() {
             CHANNEL
         ).setMethodCallHandler { call, result ->
             when (call.method) {
+                "generateSecret" -> {
+                    result.success(UUID.randomUUID().toString())
+                }
+
                 "sendTextMessage" -> {
                     try {
                         val textMessage = call.argument<String>("message") ?: ""
@@ -123,7 +123,6 @@ class MainActivity : FlutterActivity() {
                 }
 
 
-
             }
         }
 
@@ -187,10 +186,14 @@ class MainActivity : FlutterActivity() {
 
     private fun initKaonicService() {
         checkStoragePermission()
+        val ringtoneUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE)
+        val ringtone = RingtoneManager.getRingtone(this, ringtoneUri)
+        Log.i("KAONIC","initKaonicService")
         KaonicService.init(
             KaonicCommunicationManager(
                 KaonicLib.getInstance(applicationContext),
-                contentResolver
+                contentResolver,
+                ringtone
             ),
             secureStorageHelper
         )

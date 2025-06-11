@@ -60,7 +60,8 @@ class RadioAddress {
 
   static RadioAddress fromHex(String hex) {
     final address = RadioAddress();
-    final hexAddress = ByteConverter.hexToBytes(hex);
+    final hexAddress = hex.codeUnits;
+   // ByteConverter.hexToBytes(hex);
 
     for (int i = 0; i < address._data.length; ++i) {
       address._data[i] = hexAddress[i];
