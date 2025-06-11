@@ -99,17 +99,23 @@ object KaonicService : KaonicEventListener {
     override fun onEventReceived(event: KaonicEvent<KaonicEventData>) {
         CoroutineScope(Dispatchers.Default).launch {
             // Log.i(TAG, "onEventReceived ${event.data.javaClass.name}")
-            when (event.type) {
-                KaonicEventType.MESSAGE_TEXT, KaonicEventType.MESSAGE_FILE,
-                KaonicEventType.CHAT_CREATE -> {
-                    _events.emit(event)
-                }
+            val resultData: HashMap<String, Any> = HashMap()
+            resultData["type"] = event.type
+            resultData["address"] = event.data.address
+            resultData["timestamp"] = event.data.timestamp
+            eventSink?.success(resultData)
 
-                KaonicEventType.CONTACT_FOUND -> {
-                    if (!contacts.contains(event.data.address))
-                        contacts.add(event.data.address)
-                }
-            }
+//            when (event.type) {
+//                KaonicEventType.MESSAGE_TEXT, KaonicEventType.MESSAGE_FILE,
+//                KaonicEventType.CHAT_CREATE -> {
+//                    _events.emit(event)
+//                }
+//
+//                KaonicEventType.CONTACT_FOUND -> {
+//                    if (!contacts.contains(event.data.address))
+//                        contacts.add(event.data.address)
+//                }
+//            }
         }
     }
 
