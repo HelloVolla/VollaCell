@@ -1,31 +1,8 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:kaonic/data/models/kaonic_new/kaonic_event.dart';
 import 'package:uuid/uuid.dart';
 
-part 'kaonic_event.g.dart';
-
-@JsonSerializable(genericArgumentFactories: true)
-class KaonicEvent<T extends KaonicEventData> {
-  final String type;
-  final T? data;
-
-  KaonicEvent({required this.type, this.data});
-
-  factory KaonicEvent.fromJson(
-    Map<String, dynamic> json,
-    T Function(Object? json) fromJsonT,
-  ) =>
-      _$KaonicEventFromJson(json, fromJsonT);
-
-  Map<String, dynamic> toJson(Object? Function(T value) toJsonT) =>
-      _$KaonicEventToJson(this, toJsonT);
-}
-
-abstract class KaonicEventData {
-  final String address;
-  final int timestamp;
-
-  KaonicEventData({required this.address, required this.timestamp});
-}
+part 'kaonic_message_event.g.dart';
 
 abstract class MessageEvent extends KaonicEventData {
   final String id;
@@ -75,4 +52,36 @@ class MessageTextEvent extends MessageEvent {
 
   @override
   Map<String, dynamic> toJson() => _$MessageTextEventToJson(this);
+}
+
+@JsonSerializable()
+class MessageFileEvent extends MessageEvent {
+  final String fileName;
+  final int fileSize;
+  int fileSizeProcessed = 0;
+  String? path;
+
+  MessageFileEvent({
+    required super.address,
+    required super.timestamp,
+    required super.id,
+    required super.chatId,
+    required this.fileName,
+    required this.fileSize,
+    this.fileSizeProcessed = 0,
+    this.path,
+  });
+
+  MessageFileEvent.empty()
+      : fileName = '',
+        fileSize = 0,
+        fileSizeProcessed = 0,
+        path = null,
+        super(address: '', timestamp: 0, id: '', chatId: '');
+
+  factory MessageFileEvent.fromJson(Map<String, dynamic> json) =>
+      _$MessageFileEventFromJson(json);
+
+  @override
+  Map<String, dynamic> toJson() => _$MessageFileEventToJson(this);
 }

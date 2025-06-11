@@ -35,21 +35,3 @@ Object? _$nullableGenericToJson<T>(
   Object? Function(T value) toJson,
 ) =>
     input == null ? null : toJson(input);
-
-MessageTextEvent _$MessageTextEventFromJson(Map<String, dynamic> json) =>
-    MessageTextEvent(
-      address: json['address'] as String,
-      timestamp: (json['timestamp'] as num).toInt(),
-      id: json['id'] as String,
-      chatId: json['chat_id'] as String,
-      text: json['text'] as String?,
-    );
-
-Map<String, dynamic> _$MessageTextEventToJson(MessageTextEvent instance) =>
-    <String, dynamic>{
-      'address': instance.address,
-      'timestamp': instance.timestamp,
-      'id': instance.id,
-      'chat_id': instance.chatId,
-      'text': instance.text,
-    };

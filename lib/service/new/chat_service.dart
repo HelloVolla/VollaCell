@@ -1,44 +1,63 @@
 import 'dart:async';
 
-import 'package:kaonic/data/models/kaonic_event.dart';
+import 'package:kaonic/data/models/kaonic_new/kaonic_event.dart';
+import 'package:kaonic/data/models/kaonic_new/kaonic_event_type.dart';
+import 'package:kaonic/data/models/kaonic_new/kaonic_message_event.dart';
 import 'package:kaonic/service/new/kaonic_communication_service.dart';
 import 'package:rxdart/subjects.dart';
 
 class ChatService {
-  late final KaonicCommunicationService _kaonicService;
-
   ChatService(KaonicCommunicationService kaonicService) {
     _kaonicService = kaonicService;
     _listenMessages();
   }
 
+  late final KaonicCommunicationService _kaonicService;
+
+  /// key is address of chat id
   final _messagesSubject = BehaviorSubject<Map<String, List<KaonicEvent>>>();
 
+  /// key is contact address,
+  /// value is chatUUID
   final _contactChats = <String, String>{};
 
   void _listenMessages() {
-    _kaonicService.messageStream.listen((message) {
-      if (message.data is MessageTextEvent) {
-        _handleTextMessage(message);
+    _kaonicService.eventsStream
+        .where((event) => KaonicEventType.messageEvents.contains(event.type))
+        .listen((event) {
+      switch (event.type) {
+        case KaonicEventType.CHAT_CREATE:
+          _putOrUpdateChatId(
+            (event.data as MessageEvent).chatId,
+            (event.data as MessageEvent).address,
+          );
+        case KaonicEventType.MESSAGE_TEXT:
+        case KaonicEventType.MESSAGE_FILE:
+          _handleTextMessage(event);
       }
-
-// TODO redo with new KaoniEvent
-      // else if (message.type == KaonicEventType.fileMessage) {
-      //   // TODO replace with file message handling
-      //   _handleTextMessage(message);
-      // }
-      //else if (message.type == KaonicEventType.chatCreate) {
-      //   _putOrUpdateChatId(message);
-      // }
     });
   }
 
-  // TODO redo with new KaoniEvent
-  // void _putOrUpdateChatId(KaonicEventModel message) {
-  //   if (message.address == null || message.chatId == null) return;
+  Stream<List<KaonicEvent>> getChatMessages(String chatId) {
+    return _messagesSubject.stream.map((messagesMap) {
+      return messagesMap[chatId] ?? [];
+    });
+  }
 
-  //   _contactChats[message.address!] = message.chatId!;
-  // }
+  Future<String> createChat(String address) async {
+    final chatId = await _kaonicService.createChat(address);
+
+    _contactChats[address] = chatId;
+    return chatId;
+  }
+
+  void sendTextMessage(String message, String address) async {
+    _kaonicService.sendTextMessage(address, message);
+  }
+
+  void sendFileMessage(String filePath, String address) async {
+    _kaonicService.sendFileMessage(address, filePath);
+  }
 
   void _handleTextMessage(KaonicEvent message) {
     final data = message.data as MessageTextEvent;
@@ -68,23 +87,7 @@ class ChatService {
     _messagesSubject.add(currentMap);
   }
 
-  Future<dynamic> getChatMessages(String chatId) async {
-    final messages = await _kaonicService.getChatMessages(chatId);
-    return messages;
-  }
-
-  Future<String> createChat(String address) async {
-    final chatId = await _kaonicService.createChat(address);
-
+  void _putOrUpdateChatId(String chatId, String address) {
     _contactChats[address] = chatId;
-    return chatId;
-  }
-
-  void sendTextMessage(String message, String address) async {
-    _kaonicService.sendTextMessage(address, message);
-  }
-
-  void sendFileMessage(String filePath, String address) async {
-    _kaonicService.sendFileMessage(address, filePath);
   }
 }

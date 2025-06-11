@@ -2,7 +2,10 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/services.dart';
-import 'package:kaonic/data/models/kaonic_event.dart';
+import 'package:kaonic/data/models/kaonic_new/kaonic_event.dart';
+import 'package:kaonic/data/models/kaonic_new/kaonic_event_type.dart';
+import 'package:kaonic/data/models/kaonic_new/kaonic_message_event.dart';
+import 'package:rxdart/subjects.dart';
 
 class KaonicCommunicationService {
   final kaonicMethodChannel =
@@ -10,10 +13,12 @@ class KaonicCommunicationService {
   final kaonicEventChannel =
       EventChannel('network.beechat.app.kaonic/kaonicEventsStream');
 
-  final _messageController = StreamController<KaonicEvent>.broadcast();
+  final _nodesSubject = BehaviorSubject<List<String>>();
+  Stream<List<String>> get nodes => _nodesSubject.stream;
 
-  Stream<KaonicEvent> get messageStream =>
-      _messageController.stream.asBroadcastStream();
+  final _eventsController = StreamController<KaonicEvent>.broadcast();
+  Stream<KaonicEvent> get eventsStream =>
+      _eventsController.stream.asBroadcastStream();
 
   KaonicCommunicationService() {
     kaonicEventChannel.receiveBroadcastStream().listen(_listenKaonicEvents);
@@ -32,7 +37,7 @@ class KaonicCommunicationService {
   }
 
   void sendFileMessage(String address, String filePath) {
-    kaonicMethodChannel.invokeMethod('sendTextMessage', {
+    kaonicMethodChannel.invokeMethod('sendFileMessage', {
       "address": address,
       "filePath": filePath,
     });
@@ -40,7 +45,7 @@ class KaonicCommunicationService {
 
   void sendConfig(int mcs, int optionNumber, int module, int frequency,
       int channel, int channelSpacing, int txPower) {
-    kaonicMethodChannel.invokeMethod('sendTextMessage', {
+    kaonicMethodChannel.invokeMethod('sendConfig', {
       "mcs": mcs,
       "optionNumber": optionNumber,
       "module": module,
@@ -51,41 +56,40 @@ class KaonicCommunicationService {
     });
   }
 
-  Future<List<KaonicEvent>> getChatMessages(String chatId) async {
-    final messages = await kaonicMethodChannel.invokeMethod('getChatMessages');
-    final json = jsonDecode(messages);
-
-    return (json as List).map((message) {
-      return KaonicEvent<MessageTextEvent>.fromJson(message,
-          (json) => MessageTextEvent.fromJson(json as Map<String, dynamic>));
-    }).toList();
-  }
-
   void _listenKaonicEvents(dynamic event) {
     try {
-      // final kaonicEvent = KaonicEventModel.fromJson(event);
-      final json = jsonDecode(event);
-      if (json['type'] == 'Message') {
-        final message = KaonicEvent<MessageTextEvent>.fromJson(json,
-            (json) => MessageTextEvent.fromJson(json as Map<String, dynamic>));
+      final eventJson = jsonDecode(event) as Map<String, dynamic>;
+      if (eventJson.containsKey('type')) return;
 
-        _messageController.add(message);
-      } else if (json['type'] == 'MessageFile') {
-        // TODO
+      final eventType = eventJson['type']?.toString() ?? '';
+
+      KaonicEvent? kaonicEvent;
+      switch (eventType) {
+        case KaonicEventType.CONTACT_FOUND:
+          final address = eventJson.containsKey('data')
+              ? (event['data'] as Map<String, dynamic>)['address']
+                      ?.toString() ??
+                  ''
+              : '';
+          if (address.isNotEmpty && !_nodesSubject.value.contains(address)) {
+            _nodesSubject.add([..._nodesSubject.value, address]);
+          }
+          return;
+        case KaonicEventType.MESSAGE_TEXT:
+          kaonicEvent = KaonicEvent<MessageTextEvent>.fromJson(
+              eventJson,
+              (json) =>
+                  MessageTextEvent.fromJson(json as Map<String, dynamic>));
+        case KaonicEventType.MESSAGE_FILE:
+          kaonicEvent = KaonicEvent<MessageFileEvent>.fromJson(
+              eventJson,
+              (json) =>
+                  MessageFileEvent.fromJson(json as Map<String, dynamic>));
       }
 
-      // if ([
-      //   KaonicEventType.textMessage,
-      //   KaonicEventType.fileMessage,
-      // ].contains(kaonicEvent.type)) {
-      //   _messageController.add(kaonicEvent);
-      // }
-
-      // final eventMap = (event as Map).map(
-      //   (key, value) => MapEntry(key.toString(), value),
-      // );
-      // TODO: convert map to KaonicEvent<KaonicEventData>
-      //       and push it to eventController here
+      if (kaonicEvent != null) {
+        _eventsController.add(kaonicEvent);
+      }
     } catch (e) {
       print(e.toString());
 
