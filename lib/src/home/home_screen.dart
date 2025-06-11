@@ -20,7 +20,7 @@ class HomeScreen extends StatelessWidget {
     return BlocProvider(
       create: (context) => HomeBloc(
         userService: context.read<UserService>(),
-        deviceService: context.read(),
+        kaonicCommunicationService: context.read(),
         communicationService: context.read(),
       ),
       child: PopScope(
@@ -113,7 +113,7 @@ class HomeScreen extends StatelessWidget {
                                       },
                                       onIdentifyTap: () {},
                                       contact: state.user!.contacts[index],
-                                      nearbyFound: state.nodes.keys.contains(
+                                      nearbyFound: state.nodes.contains(
                                           state.user!.contacts[index].address),
                                       unreadCount: state.unreadMessages[
                                           state.user!.contacts[index].address]),

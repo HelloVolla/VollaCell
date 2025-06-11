@@ -3,16 +3,16 @@ part of 'home_bloc.dart';
 @immutable
 final class HomeState {
   const HomeState(
-      {this.user, this.unreadMessages = const {}, this.nodes = const {}});
+      {this.user, this.unreadMessages = const {}, this.nodes = const []});
 
   final UserModel? user;
-  final Map<String, MeshNode> nodes;
+  final List<String> nodes;
   final Map<String, int> unreadMessages;
 
   HomeState copyWith({
     UserModel? user,
     Map<String, int>? unreadMessages,
-    Map<String, MeshNode>? nodes,
+    List<String>? nodes,
   }) =>
       HomeState(
         user: user ?? this.user,

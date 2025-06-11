@@ -16,8 +16,6 @@ import io.flutter.plugin.common.MethodChannel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import network.beechat.app.kaonic.Kaonic
-import network.beechat.app.kaonic.services.ChatService
 import network.beechat.app.kaonic.services.KaonicService
 import network.beechat.app.kaonic.services.SecureStorageHelper
 import network.beechat.kaonic.communication.KaonicCommunicationManager
@@ -29,50 +27,27 @@ class MainActivity : FlutterActivity() {
         private const val REQUEST_STORAGE_PERMISSION = 201
     }
 
-    private lateinit var kaonic: Kaonic
-    private lateinit var chatService: ChatService
     lateinit var secureStorageHelper: SecureStorageHelper
 
     val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     private var serial: AndroidSerial? = null
     private val CHANNEL = "network.beechat.app.kaonic/kaonic"
-    private val rxBuffer = ByteArray(2048)
 
     private val CHANNEL_EVENT = "network.beechat.app.kaonic/audioStream"
     private val KAONIC_EVENT = "network.beechat.app.kaonic/packetStream"
     private var eventSink: EventChannel.EventSink? = null
-    private var androidAudio: AndroidAudio? = null
 
 
     private val KAONIC_SERVICE_EVENT = "network.beechat.app.kaonic.service/packetStream"
-
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         secureStorageHelper = SecureStorageHelper(applicationContext)
-        kaonic = Kaonic(this)
         serial = AndroidSerial(this)
-        chatService = ChatService(appScope)
-
-
         checkAudioPermission()
-
-//        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
-//            != PackageManager.PERMISSION_GRANTED
-//        ) {
-//            // Request permission
-//            ActivityCompat.requestPermissions(
-//                this,
-//                arrayOf(Manifest.permission.RECORD_AUDIO),
-//                1
-//            )
-//        }else{
-//            initAudio()
-//        }
-
 
         MethodChannel(
             flutterEngine!!.dartExecutor.binaryMessenger,
@@ -83,26 +58,30 @@ class MainActivity : FlutterActivity() {
                     try {
                         val textMessage = call.argument<String>("message") ?: ""
                         val address = call.argument<String>("address") ?: ""
-                        chatService.sendTextMessage(textMessage, address)
+                        val chatId = call.argument<String>("chatId") ?: ""
+                        KaonicService.sendTextMessage(textMessage, address, chatId)
 
                         result.success(0)
-                    }  catch (ex: Exception){
+                    } catch (ex: Exception) {
                         Log.d("sendTextMessageError", ex.toString())
                         result.error("sendTextMessageError", ex.message, "")
                     }
                 }
+
                 "sendFileMessage" -> {
                     try {
                         val filePath = call.argument<String>("filePath") ?: ""
                         val address = call.argument<String>("address") ?: ""
-                        chatService.sendFileMessage(filePath, address)
+                        val chatId = call.argument<String>("chatId") ?: ""
+                        KaonicService.sendFileMessage(filePath, address, chatId)
 
                         result.success(0)
-                    }  catch (ex: Exception){
+                    } catch (ex: Exception) {
                         Log.d("sendFileMessage", ex.toString())
                         result.error("sendFileMessage", ex.message, "")
                     }
                 }
+
                 "sendConfigure" -> {
                     try {
                         val mcs = call.argument<Int>("mcs") ?: 0
@@ -113,97 +92,38 @@ class MainActivity : FlutterActivity() {
                         val channelSpacing = call.argument<Int>("channelSpacing") ?: 0
                         val txPower = call.argument<Int>("txPower") ?: 0
 
-                        KaonicService.sendConfig(mcs, optionNumber, module, frequency, channel, channelSpacing, txPower)
+                        KaonicService.sendConfig(
+                            mcs,
+                            optionNumber,
+                            module,
+                            frequency,
+                            channel,
+                            channelSpacing,
+                            txPower
+                        )
 
                         result.success(true)
-                    }  catch (ex: Exception){
+                    } catch (ex: Exception) {
                         Log.d("sendConfigure", ex.toString())
                         result.error("sendConfigure", ex.message, "")
                     }
                 }
+
                 "createChat" -> {
                     try {
                         val address = call.argument<String>("address") ?: ""
-                        val chatId = chatService.createChatWithAddress(address)
+                        val chatId = call.argument<String>("chatId") ?: ""
+                        KaonicService.createChat(address, chatId)
 
-                        result.success(chatId)
-                    }  catch (ex: Exception){
+                        result.success(true)
+                    } catch (ex: Exception) {
                         Log.d("createChat", ex.toString())
                         result.error("createChat", ex.message, "")
                     }
                 }
-                "getChatMessages" -> {
-                    try {
-                        val chatId = call.argument<String>("chatId") ?: ""
-                        val messages = chatService.getChatMessages(chatId)
-
-                        result.success(messages)
-                    }  catch (ex: Exception){
-                        Log.d("getChatMessages", ex.toString())
-                        result.error("getChatMessages", ex.message, "")
-                    }
-                }
 
 
-                // Legacy methods
-                // Useless method
-                "enumerateDevices" -> result.success(enumerateDevices())
-                // Useless method
-                "openDevice" -> {
-                    val deviceName = call.argument<String>("deviceName")
-                    if (deviceName == null) result.success(false)
 
-                    result.success(openSerial(deviceName!!))
-                }
-
-                // Useless method
-                "closeDevice" -> {
-                    closeSerial();
-
-                    result.success(true)
-                }
-                // old method (new sendText/sendFile)
-                "kaonicTransmit" -> {
-                    val address = call.argument<String>("address")
-                    val data = call.argument<ByteArray>("data")
-                    kaonic.transmit(address!!, data!!)
-                    result.success(0)
-                }
-                // sendConfigure
-                "kaonicConfigure" -> {
-                    val config = call.argument<String>("config")
-                    kaonic.configure(config!!)
-                    result.success(0)
-                }
-
-                "startAudio"->{
-                    Log.d("Main", "start audio");
-                    androidAudio?.startPlaying()
-                    androidAudio?.startRecording()
-                    result.success(0)
-                }
-                "stopAudio"->{
-                    androidAudio?.stopRecording()
-                    androidAudio?.stopPlaying()
-                    result.success(0)
-                }
-                "feedPlayer"->{
-                    val data = call.argument<ByteArray>("data")
-                    androidAudio?.play(data,data?.size?:0)
-                    result.success(0)
-                }
-                // load secret
-                "generateKey"->{
-                    result.success(kaonic.generateIdentity())
-                }
-                // useless
-                "userStart"->{
-                    val key = call.argument<String>("key")
-                    key?.let{
-                        kaonic.start(key)
-                    }
-                    result.success(0)
-                }
             }
         }
 
@@ -224,38 +144,16 @@ class MainActivity : FlutterActivity() {
             .setStreamHandler(
                 object : EventChannel.StreamHandler {
                     override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
-                        kaonic.eventSink = events
+//                        kaonic.eventSink = events
                     }
 
                     override fun onCancel(arguments: Any?) {
-                        kaonic.eventSink = null
+//                        kaonic.eventSink = null
                     }
                 }
             )
     }
 
-    private fun enumerateDevices(): ArrayList<String> {
-        return ArrayList(AndroidSerial.enumerateDevices(this).asList())
-    }
-
-    fun openSerial(deviceName: String): Boolean {
-        val opened = serial!!.open(deviceName)
-        return opened
-    }
-
-    fun closeSerial() {
-        serial!!.close()
-    }
-
-
-    @Keep
-    fun write(data: ByteArray?, len: Int): Int {
-        return serial!!.write(data, len)
-    }
-    @Keep
-    fun read(data: ByteArray?, maxlen: Int): Int {
-        return serial!!.read(data, maxlen)
-    }
 
     override fun onRequestPermissionsResult(
         requestCode: Int,
@@ -263,27 +161,11 @@ class MainActivity : FlutterActivity() {
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if(requestCode==1 && grantResults.isNotEmpty()){
-            initAudio()
+        if (requestCode == 1 && grantResults.isNotEmpty()) {
+            initKaonicService()
+            checkStoragePermission()
         }
     }
-
-    private fun initAudio(){
-        androidAudio = AndroidAudio(context)
-        EventChannel(flutterEngine?.dartExecutor?.binaryMessenger, CHANNEL_EVENT)
-            .setStreamHandler(
-                object : EventChannel.StreamHandler {
-                    override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
-                        androidAudio?.eventSink = events
-                    }
-
-                    override fun onCancel(arguments: Any?) {
-                        androidAudio?.eventSink = null
-                    }
-                }
-            )
-    }
-
 
 
     private fun checkAudioPermission() {

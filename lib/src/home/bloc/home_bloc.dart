@@ -8,6 +8,7 @@ import 'package:kaonic/data/models/mesh_node.dart';
 import 'package:kaonic/data/models/user_model.dart';
 import 'package:kaonic/service/communication_service.dart';
 import 'package:kaonic/service/device_service.dart';
+import 'package:kaonic/service/new/kaonic_communication_service.dart';
 import 'package:kaonic/service/user_service.dart';
 import 'package:meta/meta.dart';
 import 'package:objectbox/objectbox.dart';
@@ -16,13 +17,13 @@ part 'home_event.dart';
 part 'home_state.dart';
 
 class HomeBloc extends Bloc<HomeEvent, HomeState> {
-  HomeBloc({
-    required UserService userService,
-    required DeviceService deviceService,
-    required CommunicationService communicationService,
-  })  : _userService = userService,
-        _deviceService = deviceService,
+  HomeBloc(
+      {required UserService userService,
+      required CommunicationService communicationService,
+      required KaonicCommunicationService kaonicCommunicationService})
+      : _userService = userService,
         _communicationService = communicationService,
+        _kaonicCommunicationService = kaonicCommunicationService,
         super(HomeState(user: userService.user)) {
     on<_InitEvent>(_initEvent);
     on<_UpdatedUser>(_updatedUser);
@@ -34,19 +35,20 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
     if (userService.user != null) {
       _communicationService.initializeCommunicationLayer(userService.user!);
-      _nodesSubscription = communicationService.nodes?.listen(
+      _nodesSubscription = _kaonicCommunicationService.nodes.listen(
         (event) => add(_UpdatedNodes(nodes: event)),
       );
     }
   }
 
   final UserService _userService;
-  final DeviceService _deviceService;
   final CommunicationService _communicationService;
+
+  final KaonicCommunicationService _kaonicCommunicationService;
 
   late final StreamSubscription<Query<UserModel>>? _userSubscription;
   late final StreamSubscription<Map<String, MeshChat>>? _chatSubscription;
-  late final StreamSubscription<Map<String, MeshNode>>? _nodesSubscription;
+  late final StreamSubscription<dynamic>? _nodesSubscription;
   late final StreamSubscription<MeshCall>? _callStatusSubscription;
 
   @override
@@ -60,16 +62,12 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   }
 
   FutureOr<void> _initEvent(_InitEvent event, Emitter<HomeState> emit) {
-    _deviceService.startUser(_userService.user?.key ?? '');
     _userSubscription = _userService.watchCurrentUser()?.listen((user) {
       final newUser = user.findFirst();
       if (newUser == null) return;
       add(_UpdatedUser(user: newUser));
     });
-    
-    _chatSubscription = _communicationService.chats?.listen(
-      (event) {},
-    );
+
 
     _callStatusSubscription = _communicationService.callStatusStream
         ?.listen((call) => add(_HandleCallStatus(call: call)));
@@ -82,7 +80,6 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   FutureOr<void> _updatedNodes(_UpdatedNodes event, Emitter<HomeState> emit) {
     emit(state.copyWith(nodes: event.nodes));
   }
-
 
   FutureOr<void> _handleCallStatus(
       _HandleCallStatus event, Emitter<HomeState> emit) {

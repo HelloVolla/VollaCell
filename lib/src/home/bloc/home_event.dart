@@ -20,7 +20,7 @@ final class _HandleCallStatus extends HomeEvent {
 final class _UpdatedNodes extends HomeEvent {
   _UpdatedNodes({required this.nodes});
 
-  final Map<String, MeshNode> nodes;
+  final List<String> nodes;
 }
 
 final class _UpdatedUser extends HomeEvent {

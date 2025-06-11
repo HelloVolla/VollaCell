@@ -1,5 +1,4 @@
 plugins {
-    id("org.mozilla.rust-android-gradle.rust-android") version "0.9.6"
     id("com.android.application")
     id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
@@ -37,24 +36,6 @@ android {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")
-        }
-    }
-}
-
-cargo {
-    module  = "../../kaonic"
-    libname = "kaonic"
-    targets = listOf("arm", "arm64", "x86")
-    profile = "release"
-}
-
-project.afterEvaluate {
-    tasks.withType(com.nishtahir.CargoBuildTask::class).forEach { buildTask ->
-        tasks.withType(com.android.build.gradle.tasks.MergeSourceSetFolders::class).configureEach {
-            this.inputs.dir(
-                layout.buildDirectory.dir("rustJniLibs" + File.separatorChar + buildTask.toolchain!!.folder)
-            )
-            this.dependsOn(buildTask)
         }
     }
 }
