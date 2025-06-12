@@ -31,18 +31,20 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   late final ChatService _chatService;
   late final CallService _callService;
   final String _address;
-  late final StreamSubscription<List<KaonicEvent<KaonicEventData>>>?
+  StreamSubscription<List<KaonicEvent<KaonicEventData>>>?
       _chatSubscription;
 
   @override
   Future<void> close() async {
     _chatSubscription?.cancel();
+    _chatService.onChatIDUpdated = null;
     super.close();
   }
 
   FutureOr<void> _intiChat(_IntiChat event, Emitter<ChatState> emit) async {
-    _chatSubscription =
-        _chatService.getChatMessages(_address).listen((messages) {
+    final chatId = await _chatService.createChat(_address);
+    _chatService.onChatIDUpdated = _onChatIdChanged;
+    _chatSubscription = _chatService.getChatMessages(chatId).listen((messages) {
       add(_UpdatedChats(messages: messages));
     });
   }
@@ -80,5 +82,13 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     if (event.file.files.isEmpty && event.file.files.first.path != null) return;
     final f = File(event.file.files.first.path!);
     _chatService.sendFileMessage(f.path, _address);
+  }
+
+  void _onChatIdChanged(String address, String chatId) {
+    if (address != _address) return;
+    _chatSubscription?.cancel();
+    _chatSubscription = _chatService.getChatMessages(chatId).listen((messages) {
+      add(_UpdatedChats(messages: messages));
+    });
   }
 }

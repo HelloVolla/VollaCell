@@ -62,12 +62,12 @@ class MessageFileEvent extends MessageEvent {
   String? path;
 
   MessageFileEvent({
-    required super.address,
     required super.timestamp,
     required super.id,
     required super.chatId,
     required this.fileName,
     required this.fileSize,
+    super.address = "",
     this.fileSizeProcessed = 0,
     this.path,
   });

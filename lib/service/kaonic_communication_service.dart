@@ -37,10 +37,11 @@ class KaonicCommunicationService {
     return chatId;
   }
 
-  void sendTextMessage(String address, String message) {
+  void sendTextMessage(String address, String message, String chatId) {
     kaonicMethodChannel.invokeMethod('sendTextMessage', {
       "address": address,
       "message": message,
+      "chatId": chatId,
     });
   }
 

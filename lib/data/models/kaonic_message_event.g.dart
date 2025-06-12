@@ -26,12 +26,12 @@ Map<String, dynamic> _$MessageTextEventToJson(MessageTextEvent instance) =>
 
 MessageFileEvent _$MessageFileEventFromJson(Map<String, dynamic> json) =>
     MessageFileEvent(
-      address: json['address'] as String,
       timestamp: (json['timestamp'] as num).toInt(),
       id: json['id'] as String,
       chatId: json['chat_id'] as String,
       fileName: json['fileName'] as String,
       fileSize: (json['fileSize'] as num).toInt(),
+      address: json['address'] as String? ?? "",
       fileSizeProcessed: (json['fileSizeProcessed'] as num?)?.toInt() ?? 0,
       path: json['path'] as String?,
     );
