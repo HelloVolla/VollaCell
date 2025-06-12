@@ -23,9 +23,7 @@ class CallScreen extends StatelessWidget {
       canPop: false,
       child: BlocProvider(
         create: (context) => CallBloc(
-            callState: callState,
-            callService: context.read<CallService>(),
-            communicationService: context.read<CommunicationService>()),
+            callState: callState, callService: context.read<CallService>()),
         child: Scaffold(
           body: ScreenContainer(
             child: Padding(
@@ -49,8 +47,7 @@ class CallScreen extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                              state.call?.status.getTitle(state
-                                          .usernameAddressHex
+                              state.callState?.getTitle(state.usernameAddressHex
                                           ?.substring(0, 5) ??
                                       'Unknown') ??
                                   '',

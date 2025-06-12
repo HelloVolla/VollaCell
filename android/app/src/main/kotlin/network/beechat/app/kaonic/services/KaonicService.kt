@@ -9,11 +9,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.launch
+import network.beechat.kaonic.audio.AudioService
 import network.beechat.kaonic.communication.KaonicCommunicationManager
 import network.beechat.kaonic.communication.KaonicEventListener
 import network.beechat.kaonic.models.KaonicEvent
 import network.beechat.kaonic.models.KaonicEventData
 import network.beechat.kaonic.models.KaonicEventType
+import network.beechat.kaonic.models.calls.CallAudioData
 import network.beechat.kaonic.models.connection.Connection
 import network.beechat.kaonic.models.connection.ConnectionConfig
 import network.beechat.kaonic.models.connection.ConnectionContact
@@ -24,6 +26,7 @@ object KaonicService : KaonicEventListener {
     private val TAG = "KaonicService"
     private lateinit var kaonicCommunicationHandler: KaonicCommunicationManager
     private lateinit var secureStorageHelper: SecureStorageHelper
+    private lateinit var audioService: AudioService
     private val objectMapper: ObjectMapper = ObjectMapper()
 
     /// list of nodes
@@ -45,6 +48,7 @@ object KaonicService : KaonicEventListener {
     ) {
         this.kaonicCommunicationHandler = kaonicCommunicationHandler
         this.secureStorageHelper = secureStorageHelper
+        audioService = AudioService()
         kaonicCommunicationHandler.setEventListener(this)
         _myAddress = kaonicCommunicationHandler.myAddress
 
@@ -78,7 +82,7 @@ object KaonicService : KaonicEventListener {
         kaonicCommunicationHandler.sendBroadcast(id, topic, bytes)
     }
 
-    fun sendCallEvent(callEvent:String, callId: String, address: String){
+    fun sendCallEvent(callEvent: String, callId: String, address: String) {
         kaonicCommunicationHandler.sendCallEvent(callEvent, address, callId)
     }
 
@@ -105,7 +109,13 @@ object KaonicService : KaonicEventListener {
     override fun onEventReceived(event: KaonicEvent<KaonicEventData>) {
         CoroutineScope(Dispatchers.Main).launch {
             val jsonString = objectMapper.writeValueAsString(event)
-            eventSink?.success(jsonString)
+            if (event.type == KaonicEventType.CALL_AUDIO) {
+                val callAudioData = event.data as CallAudioData
+                audioService.play(callAudioData.bytes, callAudioData.bytes.size)
+            } else {
+                eventSink?.success(jsonString)
+            }
+
         }
     }
 
