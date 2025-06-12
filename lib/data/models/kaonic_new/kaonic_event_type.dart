@@ -14,7 +14,6 @@ abstract class KaonicEventType {
   static const String CALL_INVOKE = "CallInvoke";
   static const String CALL_ANSWER = "CallAnswer";
   static const String CALL_REJECT = "CallReject";
-  static const String CALL_AUDIO = "CallAudio";
   static const String CALL_TIMEOUT = "CallTimeout";
 
   static const List<String> callEvents = [
@@ -22,7 +21,6 @@ abstract class KaonicEventType {
     CALL_ANSWER,
     CALL_REJECT,
     CALL_TIMEOUT,
-    CALL_AUDIO,
   ];
 
   // Other

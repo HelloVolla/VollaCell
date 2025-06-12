@@ -64,6 +64,27 @@ class KaonicCommunicationService {
     });
   }
 
+  void startCall(String callId, String address) {
+    kaonicMethodChannel.invokeMethod('startCall', {
+      "address": address,
+      "callId": callId,
+    });
+  }
+
+  void answerCall(String callId, String address) {
+    kaonicMethodChannel.invokeMethod('answerCall', {
+      "address": address,
+      "callId": callId,
+    });
+  }
+
+  void rejectCall(String callId, String address) {
+    kaonicMethodChannel.invokeMethod('rejectCall', {
+      "address": address,
+      "callId": callId,
+    });
+  }
+
   void _listenKaonicEvents(dynamic event) {
     try {
       final eventJson = jsonDecode(event) as Map<String, dynamic>;

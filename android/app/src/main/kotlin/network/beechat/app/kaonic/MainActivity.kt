@@ -19,6 +19,7 @@ import network.beechat.app.kaonic.services.SecureStorageHelper
 import network.beechat.kaonic.communication.KaonicCommunicationManager
 import network.beechat.kaonic.impl.KaonicLib
 import java.io.File
+import network.beechat.kaonic.models.KaonicEventType
 import java.util.UUID
 
 class MainActivity : FlutterActivity() {
@@ -133,6 +134,25 @@ class MainActivity : FlutterActivity() {
                     }
                 }
 
+                "startCall",
+                "answerCall",
+                "rejectCall" -> {
+                    try {
+                        val type = when (call.method) {
+                            "startCall" -> KaonicEventType.CALL_INVOKE
+                            "answerCall" -> KaonicEventType.CALL_ANSWER
+                            else -> KaonicEventType.CALL_REJECT
+                        }
+                        val address = call.argument<String>("address") ?: ""
+                        val callId = call.argument<String>("callId") ?: ""
+                        KaonicService.sendCallEvent(type, callId, address)
+
+                        result.success(0)
+                    } catch (ex: Exception) {
+                        Log.d("sendTextMessageError", ex.toString())
+                        result.error("sendTextMessageError", ex.message, "")
+                    }
+                }
 
             }
         }
@@ -199,7 +219,7 @@ class MainActivity : FlutterActivity() {
         checkStoragePermission()
         val ringtoneUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE)
         val ringtone = RingtoneManager.getRingtone(this, ringtoneUri)
-        Log.i("KAONIC","initKaonicService")
+        Log.i("KAONIC", "initKaonicService")
         KaonicService.init(
             KaonicCommunicationManager(
                 KaonicLib.getInstance(applicationContext),

@@ -13,6 +13,7 @@ import network.beechat.kaonic.communication.KaonicCommunicationManager
 import network.beechat.kaonic.communication.KaonicEventListener
 import network.beechat.kaonic.models.KaonicEvent
 import network.beechat.kaonic.models.KaonicEventData
+import network.beechat.kaonic.models.KaonicEventType
 import network.beechat.kaonic.models.connection.Connection
 import network.beechat.kaonic.models.connection.ConnectionConfig
 import network.beechat.kaonic.models.connection.ConnectionContact
@@ -75,6 +76,10 @@ object KaonicService : KaonicEventListener {
 
     fun sendBroadcast(id: String, topic: String, bytes: ByteArray) {
         kaonicCommunicationHandler.sendBroadcast(id, topic, bytes)
+    }
+
+    fun sendCallEvent(callEvent:String, callId: String, address: String){
+        kaonicCommunicationHandler.sendCallEvent(callEvent, address, callId)
     }
 
     fun sendConfig(
