@@ -10,12 +10,12 @@ CallEventData _$CallEventDataFromJson(Map<String, dynamic> json) =>
     CallEventData(
       address: json['address'] as String,
       timestamp: (json['timestamp'] as num).toInt(),
-      callId: json['callId'] as String,
+      callId: json['call_id'] as String,
     );
 
 Map<String, dynamic> _$CallEventDataToJson(CallEventData instance) =>
     <String, dynamic>{
       'address': instance.address,
       'timestamp': instance.timestamp,
-      'callId': instance.callId,
+      'call_id': instance.callId,
     };

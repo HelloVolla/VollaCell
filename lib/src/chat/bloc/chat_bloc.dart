@@ -7,16 +7,21 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kaonic/data/models/kaonic_new/kaonic_event.dart';
 import 'package:kaonic/data/models/mesh_address.dart';
 import 'package:kaonic/data/models/radio_address.dart';
+import 'package:kaonic/service/new/call_service.dart';
+// import 'package:kaonic/service/call_service.dart';
 import 'package:kaonic/service/new/chat_service.dart';
-import 'package:kaonic/src/chat/chat_args.dart';
 
 part 'chat_event.dart';
 part 'chat_state.dart';
 
 class ChatBloc extends Bloc<ChatEvent, ChatState> {
-  ChatBloc({required ChatService chatService, required String address})
-      : _chatService = chatService,
+  ChatBloc({
+    required ChatService chatService,
+    required CallService callService,
+    required String address,
+  })  : _chatService = chatService,
         _address = address,
+        _callService = callService,
         super(ChatState(
             address: MeshAddress.fromRadio(RadioAddress.fromHex(address)))) {
     on<SendMessage>(_sendMessage);
@@ -28,6 +33,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     add(_IntiChat());
   }
   late final ChatService _chatService;
+  late final CallService _callService;
   // final CommunicationService _communicationService;
   final String _address;
   late final String _chatId;
@@ -74,7 +80,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
 
   FutureOr<void> _initiateCall(
       InitiateCall event, Emitter<ChatState> emit) async {
-    // await _communicationService.initiateCall(state.address);
+    _callService.createCall(_address);
 
     emit(NavigateToCall(address: state.address));
   }

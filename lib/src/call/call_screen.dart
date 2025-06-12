@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:kaonic/data/models/mesh_call.dart';
 import 'package:kaonic/service/communication_service.dart';
+import 'package:kaonic/service/new/call_service.dart';
 import 'package:kaonic/src/call/bloc/call_bloc.dart';
 import 'package:kaonic/src/widgets/icon_circle_button.dart';
 import 'package:kaonic/src/widgets/screen_container.dart';
@@ -10,7 +11,11 @@ import 'package:kaonic/theme/text_styles.dart';
 import 'package:kaonic/theme/theme.dart';
 
 class CallScreen extends StatelessWidget {
-  const CallScreen({super.key});
+  final CallScreenState callState;
+  const CallScreen({
+    super.key,
+    required this.callState,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -18,6 +23,8 @@ class CallScreen extends StatelessWidget {
       canPop: false,
       child: BlocProvider(
         create: (context) => CallBloc(
+            callState: callState,
+            callService: context.read<CallService>(),
             communicationService: context.read<CommunicationService>()),
         child: Scaffold(
           body: ScreenContainer(
@@ -69,8 +76,8 @@ class CallScreen extends StatelessWidget {
                             ),
                             AnimatedSwitcher(
                               duration: Durations.medium2,
-                              child: switch (state.call?.status) {
-                                MeshCallStatuses.incomingCall => Row(
+                              child: switch (state.callState) {
+                                CallScreenState.incoming => Row(
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceEvenly,
                                     children: [
@@ -94,8 +101,8 @@ class CallScreen extends StatelessWidget {
                                       )
                                     ],
                                   ),
-                                MeshCallStatuses.outcomeCall ||
-                                MeshCallStatuses.inCall =>
+                                CallScreenState.outgoing ||
+                                CallScreenState.callInProgress =>
                                   IconCircleButton(
                                     icon: Icons.call_end,
                                     onTap: () {
@@ -103,7 +110,7 @@ class CallScreen extends StatelessWidget {
                                     },
                                     color: AppColors.negative,
                                   ),
-                                MeshCallStatuses.ended => Opacity(
+                                CallScreenState.finished => Opacity(
                                     opacity: 0.5,
                                     child: IconCircleButton(
                                       icon: Icons.call_end,

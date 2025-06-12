@@ -2,8 +2,11 @@ part of 'home_bloc.dart';
 
 @immutable
 final class HomeState {
-  const HomeState(
-      {this.user, this.unreadMessages = const {}, this.nodes = const []});
+  const HomeState({
+    this.user,
+    this.unreadMessages = const {},
+    this.nodes = const [],
+  });
 
   final UserModel? user;
   final List<String> nodes;
@@ -26,10 +29,23 @@ final class IncomingCall extends HomeState {
     required super.nodes,
     required super.unreadMessages,
     required super.user,
+    required this.address,
+    required this.callId,
   });
 
-  static IncomingCall fromParentState(HomeState state) => IncomingCall(
-      nodes: state.nodes,
-      unreadMessages: state.unreadMessages,
-      user: state.user);
+  final String? callId;
+  final String? address;
+
+  static IncomingCall fromParentState(
+    HomeState state,
+    String? callId,
+    String? address,
+  ) =>
+      IncomingCall(
+        nodes: state.nodes,
+        unreadMessages: state.unreadMessages,
+        user: state.user,
+        callId: callId,
+        address: address,
+      );
 }

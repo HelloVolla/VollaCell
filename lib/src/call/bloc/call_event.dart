@@ -14,3 +14,9 @@ final class _CallUpdated extends CallEvent {
 final class EndCall extends CallEvent {}
 
 final class AcceptCall extends CallEvent {}
+
+final class UpdateCallState extends CallEvent {
+  final CallScreenState callSate;
+
+  UpdateCallState(this.callSate);
+}

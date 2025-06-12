@@ -1,18 +1,24 @@
 import 'dart:async';
 
+import 'package:flutter/physics.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kaonic/data/models/mesh_address.dart';
 import 'package:kaonic/data/models/mesh_call.dart';
 import 'package:kaonic/service/communication_service.dart';
-import 'package:meta/meta.dart';
+import 'package:kaonic/service/new/call_service.dart';
 
 part 'call_event.dart';
 part 'call_state.dart';
 
 class CallBloc extends Bloc<CallEvent, CallState> {
-  CallBloc({required CommunicationService communicationService})
-      : _communicationService = communicationService,
+  CallBloc({
+    required CommunicationService communicationService,
+    required CallService callService,
+    required CallScreenState callState,
+  })  : _communicationService = communicationService,
+        _callService = callService,
         super(CallState(
+            callState: callState,
             call: communicationService.callStatusValue,
             usernameAddressHex:
                 communicationService.callStatusValue?.address?.toHex())) {
@@ -20,22 +26,34 @@ class CallBloc extends Bloc<CallEvent, CallState> {
     on<_CallUpdated>(_callUpdated);
     on<EndCall>(_endCall);
     on<AcceptCall>(_acceptCall);
+    on<UpdateCallState>(_onUpdateCallState);
 
     add(_InitCall());
   }
 
   late final StreamSubscription<MeshCall>? _callSubscription;
+  late final StreamSubscription<CallScreenState>? _callStateSubscription;
   final CommunicationService _communicationService;
+  late final CallService _callService;
 
   @override
   close() async {
     _callSubscription?.cancel();
+    _callStateSubscription?.cancel();
     super.close();
   }
 
   FutureOr<void> _initCall(_InitCall event, Emitter<CallState> emit) {
-    _callSubscription = _communicationService.callStatusStream
-        ?.listen((call) => add(_CallUpdated(call: call)));
+    // _callSubscription = _communicationService.callStatusStream
+    //     ?.listen((call) => add(_CallUpdated(call: call)));
+
+    _callStateSubscription = _callService.callState.listen((callState) {
+      add(UpdateCallState(callState));
+    });
+  }
+
+  void _onUpdateCallState(UpdateCallState event, Emitter<CallState> emit) {
+    emit(state.copyWith(callState: event.callSate));
   }
 
   FutureOr<void> _callUpdated(

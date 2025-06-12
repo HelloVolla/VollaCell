@@ -8,6 +8,7 @@ import 'package:kaonic/data/models/mesh_node.dart';
 import 'package:kaonic/data/models/user_model.dart';
 import 'package:kaonic/service/communication_service.dart';
 import 'package:kaonic/service/device_service.dart';
+import 'package:kaonic/service/new/call_service.dart';
 import 'package:kaonic/service/new/kaonic_communication_service.dart';
 import 'package:kaonic/service/user_service.dart';
 import 'package:meta/meta.dart';
@@ -17,11 +18,13 @@ part 'home_event.dart';
 part 'home_state.dart';
 
 class HomeBloc extends Bloc<HomeEvent, HomeState> {
-  HomeBloc(
-      {required UserService userService,
-      required CommunicationService communicationService,
-      required KaonicCommunicationService kaonicCommunicationService})
-      : _userService = userService,
+  HomeBloc({
+    required CallService callService,
+    required UserService userService,
+    required CommunicationService communicationService,
+    required KaonicCommunicationService kaonicCommunicationService,
+  })  : _userService = userService,
+        _callService = callService,
         _communicationService = communicationService,
         _kaonicCommunicationService = kaonicCommunicationService,
         super(HomeState(user: userService.user)) {
@@ -42,6 +45,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   }
 
   final UserService _userService;
+  late final CallService _callService;
   final CommunicationService _communicationService;
 
   final KaonicCommunicationService _kaonicCommunicationService;
@@ -50,6 +54,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   late final StreamSubscription<Map<String, MeshChat>>? _chatSubscription;
   late final StreamSubscription<dynamic>? _nodesSubscription;
   late final StreamSubscription<MeshCall>? _callStatusSubscription;
+  late final StreamSubscription<String>? _callNavigationEventsSubscription;
 
   @override
   close() async {
@@ -58,6 +63,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     _communicationService.dispose();
     _nodesSubscription?.cancel();
     _callStatusSubscription?.cancel();
+    _callNavigationEventsSubscription?.cancel();
     super.close();
   }
 
@@ -68,9 +74,17 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       add(_UpdatedUser(user: newUser));
     });
 
+    // _callStatusSubscription = _communicationService.callStatusStream
+    //     ?.listen((call) => add(_HandleCallStatus(call: call)));
 
-    _callStatusSubscription = _communicationService.callStatusStream
-        ?.listen((call) => add(_HandleCallStatus(call: call)));
+    _callNavigationEventsSubscription =
+        _callService.navigationEvents.listen((navEvent) {
+      final navigationInfo = navEvent.split('/');
+      add(_HandleCallStatus(
+        callId: navigationInfo[1],
+        address: navigationInfo.last,
+      ));
+    });
   }
 
   FutureOr<void> _updatedUser(_UpdatedUser event, Emitter<HomeState> emit) {
@@ -83,9 +97,9 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
   FutureOr<void> _handleCallStatus(
       _HandleCallStatus event, Emitter<HomeState> emit) {
-    if (event.call.status == MeshCallStatuses.incomingCall) {
-      emit(IncomingCall.fromParentState(state));
-    }
+    // if (event.call.status == MeshCallStatuses.incomingCall) {
+    emit(IncomingCall.fromParentState(state, event.callId, event.address));
+    // }
   }
 
   FutureOr<void> _updatedChats(_UpdatedChats event, Emitter<HomeState> emit) {

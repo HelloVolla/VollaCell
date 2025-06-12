@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/services.dart';
+import 'package:kaonic/data/models/kaonic_new/call_event_data.dart';
 import 'package:kaonic/data/models/kaonic_new/kaonic_create_chat_event.dart';
 import 'package:kaonic/data/models/kaonic_new/kaonic_event.dart';
 import 'package:kaonic/data/models/kaonic_new/kaonic_event_type.dart';
@@ -125,6 +126,12 @@ class KaonicCommunicationService {
         case KaonicEventType.CHAT_CREATE:
           kaonicEvent = KaonicEvent<ChatCreateEvent>.fromJson(eventJson,
               (json) => ChatCreateEvent.fromJson(json as Map<String, dynamic>));
+        case KaonicEventType.CALL_INVOKE:
+        case KaonicEventType.CALL_ANSWER:
+        case KaonicEventType.CALL_REJECT:
+        case KaonicEventType.CALL_TIMEOUT:
+          kaonicEvent = KaonicEvent<CallEventData>.fromJson(eventJson,
+              (json) => CallEventData.fromJson(json as Map<String, dynamic>));
       }
 
       if (kaonicEvent != null) {

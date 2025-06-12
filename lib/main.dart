@@ -9,6 +9,7 @@ import 'package:kaonic/generated/l10n.dart';
 import 'package:kaonic/routes.dart';
 import 'package:kaonic/service/communication_service.dart';
 import 'package:kaonic/service/device_service.dart';
+import 'package:kaonic/service/new/call_service.dart';
 import 'package:kaonic/service/new/chat_service.dart';
 import 'package:kaonic/service/new/kaonic_communication_service.dart';
 import 'package:kaonic/service/user_service.dart';
@@ -47,6 +48,8 @@ class _MainAppState extends State<MainApp> {
   final _deviceService = DeviceService();
   final _kaonicCommunicationService = KaonicCommunicationService();
   late final _chatService = ChatService(_kaonicCommunicationService);
+  late final _callService = CallService(_kaonicCommunicationService);
+
   @override
   void initState() {
     super.initState();
@@ -61,6 +64,7 @@ class _MainAppState extends State<MainApp> {
             RepositoryProvider(
                 create: (context) => _kaonicCommunicationService),
             RepositoryProvider(create: (context) => _chatService),
+            RepositoryProvider(create: (context) => _callService),
             RepositoryProvider(create: (context) => _storageService),
             RepositoryProvider(create: (context) => _deviceService),
             RepositoryProvider(
@@ -97,7 +101,10 @@ class _MainAppState extends State<MainApp> {
                       address:
                           ModalRoute.of(context)?.settings.arguments as String,
                     ),
-                Routes.call: (context) => const CallScreen(),
+                Routes.call: (context) => CallScreen(
+                      callState: ModalRoute.of(context)?.settings.arguments
+                          as CallScreenState,
+                    ),
               }),
         ));
   }

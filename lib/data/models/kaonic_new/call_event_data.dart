@@ -6,6 +6,7 @@ part 'call_event_data.g.dart';
 
 @JsonSerializable()
 class CallEventData extends KaonicEventData {
+  @JsonKey(name: 'call_id')
   final String callId;
   final String id;
 
@@ -25,7 +26,6 @@ class CallEventData extends KaonicEventData {
       : callId = '',
         id = const Uuid().v4(),
         super(address: '', timestamp: 0);
-
 
   factory CallEventData.fromJson(Map<String, dynamic> json) =>
       _$CallEventDataFromJson(json);

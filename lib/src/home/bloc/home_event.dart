@@ -12,9 +12,13 @@ final class _UpdatedChats extends HomeEvent {
 }
 
 final class _HandleCallStatus extends HomeEvent {
-  _HandleCallStatus({required this.call});
+  _HandleCallStatus({
+    required this.callId,
+    required this.address,
+  });
 
-  final MeshCall call;
+  final String callId;
+  final String address;
 }
 
 final class _UpdatedNodes extends HomeEvent {

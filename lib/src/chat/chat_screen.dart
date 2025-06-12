@@ -8,6 +8,7 @@ import 'package:kaonic/data/models/kaonic_new/kaonic_message_event.dart';
 import 'package:kaonic/generated/l10n.dart';
 import 'package:kaonic/routes.dart';
 import 'package:kaonic/service/communication_service.dart';
+import 'package:kaonic/service/new/call_service.dart';
 import 'package:kaonic/service/new/chat_service.dart';
 import 'package:kaonic/src/chat/bloc/chat_bloc.dart';
 import 'package:kaonic/src/chat/chat_args.dart';
@@ -40,6 +41,7 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   void initState() {
     _chatBloc = ChatBloc(
+      callService: context.read<CallService>(),
       address: widget.address,
       chatService: context.read<ChatService>(),
     );
@@ -109,7 +111,10 @@ class _ChatScreenState extends State<ChatScreen> {
                   child: BlocConsumer<ChatBloc, ChatState>(
                     listener: (context, state) {
                       if (state is NavigateToCall) {
-                        Navigator.of(context).pushReplacementNamed(Routes.call);
+                        Navigator.of(context).pushReplacementNamed(
+                          Routes.call,
+                          arguments: CallScreenState.outgoing,
+                        );
                         return;
                       }
 

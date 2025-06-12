@@ -1,5 +1,6 @@
 import 'package:kaonic/generated/l10n.dart';
 import 'package:kaonic/routes.dart';
+import 'package:kaonic/service/new/call_service.dart';
 import 'package:kaonic/service/user_service.dart';
 import 'package:kaonic/src/chat/chat_args.dart';
 import 'package:kaonic/src/home/bloc/home_bloc.dart';
@@ -19,6 +20,7 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => HomeBloc(
+        callService: context.read<CallService>(),
         userService: context.read<UserService>(),
         kaonicCommunicationService: context.read(),
         communicationService: context.read(),
@@ -69,7 +71,10 @@ class HomeScreen extends StatelessWidget {
                     child: BlocConsumer<HomeBloc, HomeState>(
                       listener: (context, state) {
                         if (state is IncomingCall) {
-                          Navigator.of(context).pushNamed(Routes.call);
+                          Navigator.of(context).pushNamed(
+                            Routes.call,
+                            arguments: CallScreenState.incoming,
+                          );
                         }
                       },
                       builder: (context, state) {
