@@ -1,5 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:kaonic/data/models/kaonic_new/kaonic_event.dart';
+import 'package:kaonic/data/models/kaonic_event.dart';
 import 'package:uuid/uuid.dart';
 
 part 'kaonic_message_event.g.dart';

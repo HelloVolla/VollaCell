@@ -2,11 +2,11 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/services.dart';
-import 'package:kaonic/data/models/kaonic_new/call_event_data.dart';
-import 'package:kaonic/data/models/kaonic_new/kaonic_create_chat_event.dart';
-import 'package:kaonic/data/models/kaonic_new/kaonic_event.dart';
-import 'package:kaonic/data/models/kaonic_new/kaonic_event_type.dart';
-import 'package:kaonic/data/models/kaonic_new/kaonic_message_event.dart';
+import 'package:kaonic/data/models/call_event_data.dart';
+import 'package:kaonic/data/models/kaonic_create_chat_event.dart';
+import 'package:kaonic/data/models/kaonic_event.dart';
+import 'package:kaonic/data/models/kaonic_event_type.dart';
+import 'package:kaonic/data/models/kaonic_message_event.dart';
 import 'package:rxdart/subjects.dart';
 import 'package:uuid/uuid.dart';
 

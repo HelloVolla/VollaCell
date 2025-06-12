@@ -7,14 +7,11 @@ import 'package:kaonic/data/repository/storage.dart';
 import 'package:kaonic/data/repository/user_repository.dart';
 import 'package:kaonic/generated/l10n.dart';
 import 'package:kaonic/routes.dart';
-import 'package:kaonic/service/communication_service.dart';
-import 'package:kaonic/service/device_service.dart';
-import 'package:kaonic/service/new/call_service.dart';
-import 'package:kaonic/service/new/chat_service.dart';
-import 'package:kaonic/service/new/kaonic_communication_service.dart';
+import 'package:kaonic/service/call_service.dart';
+import 'package:kaonic/service/chat_service.dart';
+import 'package:kaonic/service/kaonic_communication_service.dart';
 import 'package:kaonic/service/user_service.dart';
 import 'package:kaonic/src/call/call_screen.dart';
-import 'package:kaonic/src/chat/chat_args.dart';
 import 'package:kaonic/src/chat/chat_screen.dart';
 import 'package:kaonic/src/find_nearby/find_nearby_screen.dart';
 import 'package:kaonic/src/home/home_screen.dart';
@@ -45,7 +42,6 @@ class MainApp extends StatefulWidget {
 class _MainAppState extends State<MainApp> {
   final designSize = const Size(375, 812);
   final _storageService = StorageService();
-  final _deviceService = DeviceService();
   final _kaonicCommunicationService = KaonicCommunicationService();
   late final _chatService = ChatService(_kaonicCommunicationService);
   late final _callService = CallService(_kaonicCommunicationService);
@@ -66,15 +62,11 @@ class _MainAppState extends State<MainApp> {
             RepositoryProvider(create: (context) => _chatService),
             RepositoryProvider(create: (context) => _callService),
             RepositoryProvider(create: (context) => _storageService),
-            RepositoryProvider(create: (context) => _deviceService),
             RepositoryProvider(
               create: (context) => UserService(
                 userRepository: UserRepository(storageService: _storageService),
               ),
             ),
-            RepositoryProvider(
-                create: (context) =>
-                    CommunicationService(deviceService: _deviceService)),
           ],
           child: MaterialApp(
               debugShowCheckedModeBanner: false,

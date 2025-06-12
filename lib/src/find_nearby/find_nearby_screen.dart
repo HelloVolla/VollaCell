@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:kaonic/generated/l10n.dart';
-import 'package:kaonic/service/new/kaonic_communication_service.dart';
+import 'package:kaonic/service/kaonic_communication_service.dart';
 import 'package:kaonic/service/user_service.dart';
 import 'package:kaonic/src/find_nearby/bloc/find_nearby_bloc.dart';
 import 'package:kaonic/src/find_nearby/device_item.dart';
@@ -78,21 +78,6 @@ class FindNearbyScreen extends StatelessWidget {
                                 itemBuilder: (context, index) => DeviceItem(
                                       showAvailability: false,
                                       onTap: () {
-                                        try {
-                                          final contact =
-                                              state.contacts.firstWhere(
-                                            (element) =>
-                                                element.address ==
-                                                state.devices[index],
-                                          );
-                                          // Navigator.of(context)
-                                          //     .pushReplacementNamed(Routes.chat,
-                                          //         arguments: ChatArgs(
-                                          //             contact: contact));
-                                          return;
-                                        } catch (e) {
-                                          print("");
-                                        }
                                         DialogUtil.showDefaultDialog(
                                           context,
                                           onYes: () {

@@ -1,7 +1,6 @@
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/material.dart';
-import 'package:kaonic/data/models/kaonic_new/kaonic_message_event.dart';
-import 'package:kaonic/data/models/mesh_message.dart';
+import 'package:kaonic/data/models/kaonic_message_event.dart';
 import 'package:kaonic/theme/text_styles.dart';
 import 'package:kaonic/theme/theme.dart';
 import 'package:open_file/open_file.dart';

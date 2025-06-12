@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:kaonic/service/new/call_service.dart';
+import 'package:kaonic/service/call_service.dart';
 
 part 'call_event.dart';
 part 'call_state.dart';

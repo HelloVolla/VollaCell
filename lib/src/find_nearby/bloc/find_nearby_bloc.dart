@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kaonic/data/models/contact_model.dart';
-import 'package:kaonic/service/new/kaonic_communication_service.dart';
+import 'package:kaonic/service/kaonic_communication_service.dart';
 import 'package:kaonic/service/user_service.dart';
 import 'package:meta/meta.dart';
 

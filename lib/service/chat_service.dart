@@ -1,9 +1,9 @@
 import 'dart:async';
 
-import 'package:kaonic/data/models/kaonic_new/kaonic_event.dart';
-import 'package:kaonic/data/models/kaonic_new/kaonic_event_type.dart';
-import 'package:kaonic/data/models/kaonic_new/kaonic_message_event.dart';
-import 'package:kaonic/service/new/kaonic_communication_service.dart';
+import 'package:kaonic/data/models/kaonic_event.dart';
+import 'package:kaonic/data/models/kaonic_event_type.dart';
+import 'package:kaonic/data/models/kaonic_message_event.dart';
+import 'package:kaonic/service/kaonic_communication_service.dart';
 import 'package:rxdart/subjects.dart';
 
 class ChatService {

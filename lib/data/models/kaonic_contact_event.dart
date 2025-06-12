@@ -1,5 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:kaonic/data/models/kaonic_new/kaonic_event.dart';
+import 'package:kaonic/data/models/kaonic_event.dart';
 
 part 'kaonic_contact_event.g.dart';
 
@@ -15,6 +15,5 @@ class ContactFoundEvent extends KaonicEventData {
   factory ContactFoundEvent.fromJson(Map<String, dynamic> json) =>
       _$ContactFoundEventFromJson(json);
 
-  @override
   Map<String, dynamic> toJson() => _$ContactFoundEventToJson(this);
 }

@@ -1,17 +1,14 @@
-import 'dart:async';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:kaonic/data/models/kaonic_new/kaonic_message_event.dart';
+import 'package:kaonic/data/models/kaonic_message_event.dart';
 import 'package:kaonic/generated/l10n.dart';
 import 'package:kaonic/routes.dart';
-import 'package:kaonic/service/communication_service.dart';
-import 'package:kaonic/service/new/call_service.dart';
-import 'package:kaonic/service/new/chat_service.dart';
+import 'package:kaonic/service/call_service.dart';
+import 'package:kaonic/service/chat_service.dart';
 import 'package:kaonic/src/chat/bloc/chat_bloc.dart';
-import 'package:kaonic/src/chat/chat_args.dart';
 import 'package:kaonic/src/chat/widgets/chat_item.dart';
 import 'package:kaonic/src/widgets/circle_button.dart';
 import 'package:kaonic/src/widgets/main_button.dart';
@@ -37,7 +34,6 @@ class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _textController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   late final ChatBloc _chatBloc;
-  late final StreamSubscription? _fileSubscription;
   @override
   void initState() {
     _chatBloc = ChatBloc(
@@ -50,17 +46,6 @@ class _ChatScreenState extends State<ChatScreen> {
         .then(
       (value) {
         print("object");
-      },
-    );
-    _fileSubscription = context.read<CommunicationService>().fileEvents?.listen(
-      (event) {
-        if (event != null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('File ${event.fileName} downloaded'),
-            ),
-          );
-        }
       },
     );
     super.initState();
@@ -201,7 +186,6 @@ class _ChatScreenState extends State<ChatScreen> {
   void dispose() {
     _textController.dispose();
     _scrollController.dispose();
-    _fileSubscription?.cancel();
     super.dispose();
   }
 }

@@ -4,12 +4,9 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:kaonic/data/models/kaonic_new/kaonic_event.dart';
-import 'package:kaonic/data/models/mesh_address.dart';
-import 'package:kaonic/data/models/radio_address.dart';
-import 'package:kaonic/service/new/call_service.dart';
-// import 'package:kaonic/service/call_service.dart';
-import 'package:kaonic/service/new/chat_service.dart';
+import 'package:kaonic/data/models/kaonic_event.dart';
+import 'package:kaonic/service/call_service.dart';
+import 'package:kaonic/service/chat_service.dart';
 
 part 'chat_event.dart';
 part 'chat_state.dart';
@@ -22,8 +19,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   })  : _chatService = chatService,
         _address = address,
         _callService = callService,
-        super(ChatState(
-            address: MeshAddress.fromRadio(RadioAddress.fromHex(address)))) {
+        super(ChatState(address: address)) {
     on<SendMessage>(_sendMessage);
     on<_UpdatedChats>(_updatedChats);
     on<_IntiChat>(_intiChat);
@@ -34,10 +30,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   }
   late final ChatService _chatService;
   late final CallService _callService;
-  // final CommunicationService _communicationService;
   final String _address;
-  late final String _chatId;
-  // late final StreamSubscription<Map<String, MeshChat>>? _chatSubscription;
   late final StreamSubscription<List<KaonicEvent<KaonicEventData>>>?
       _chatSubscription;
 
@@ -48,7 +41,6 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   }
 
   FutureOr<void> _intiChat(_IntiChat event, Emitter<ChatState> emit) async {
-    _chatId = await _chatService.createChat(_address);
     _chatSubscription =
         _chatService.getChatMessages(_address).listen((messages) {
       add(_UpdatedChats(messages: messages));
@@ -72,7 +64,6 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     // _communicationService.markMessageRead(state.address);
 
     emit(state.copyWith(
-      // messages: event.chats[_args.contact.address]?.messages,
       messages: event.messages,
       flagScrollToDown: true,
     ));

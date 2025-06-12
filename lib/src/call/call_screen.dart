@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:kaonic/data/models/mesh_call.dart';
-import 'package:kaonic/service/communication_service.dart';
-import 'package:kaonic/service/new/call_service.dart';
+import 'package:kaonic/service/call_service.dart';
 import 'package:kaonic/src/call/bloc/call_bloc.dart';
 import 'package:kaonic/src/widgets/icon_circle_button.dart';
 import 'package:kaonic/src/widgets/screen_container.dart';

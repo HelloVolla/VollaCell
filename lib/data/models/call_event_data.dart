@@ -1,5 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:kaonic/data/models/kaonic_new/kaonic_event.dart';
+import 'package:kaonic/data/models/kaonic_event.dart';
 import 'package:uuid/uuid.dart';
 
 part 'call_event_data.g.dart';
@@ -30,6 +30,5 @@ class CallEventData extends KaonicEventData {
   factory CallEventData.fromJson(Map<String, dynamic> json) =>
       _$CallEventDataFromJson(json);
 
-  @override
   Map<String, dynamic> toJson() => _$CallEventDataToJson(this);
 }

@@ -5,12 +5,6 @@ sealed class HomeEvent {}
 
 final class _InitEvent extends HomeEvent {}
 
-final class _UpdatedChats extends HomeEvent {
-  _UpdatedChats({required this.chats});
-
-  final Map<String, MeshChat> chats;
-}
-
 final class _HandleCallStatus extends HomeEvent {
   _HandleCallStatus({
     required this.callId,
