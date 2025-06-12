@@ -6,7 +6,6 @@ import 'package:kaonic/data/models/user_model.dart';
 import 'package:kaonic/service/call_service.dart';
 import 'package:kaonic/service/kaonic_communication_service.dart';
 import 'package:kaonic/service/user_service.dart';
-import 'package:meta/meta.dart';
 import 'package:objectbox/objectbox.dart';
 
 part 'home_event.dart';

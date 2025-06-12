@@ -30,9 +30,6 @@ class UserService {
     if (_user != null) {
       _userRepository.updateUser(_user!.copyWith(logged: true));
     }
-
-//mesh
-
     return _user;
   }
 

@@ -28,15 +28,17 @@ class DeviceItem extends StatelessWidget {
             flex: 2,
             child: DecoratedBox(
               decoration: BoxDecoration(
-                  gradient: AppColors.yellowGradient,
-                  borderRadius: BorderRadius.circular(42)),
+                // gradient: AppColors.yellowGradient,
+                color: AppColors.white,
+                borderRadius: BorderRadius.circular(42),
+              ),
               child: SizedBox(
                 height: 48,
                 child: Align(
                   child: Padding(
                     padding: EdgeInsets.symmetric(horizontal: 10.w),
                     child: Text(
-                      'User',
+                      S.of(context).user,
                       style: TextStyles.text18Bold,
                       overflow: TextOverflow.ellipsis,
                     ),

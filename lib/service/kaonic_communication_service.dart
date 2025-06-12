@@ -11,6 +11,9 @@ import 'package:rxdart/subjects.dart';
 import 'package:uuid/uuid.dart';
 
 class KaonicCommunicationService {
+  static const defaultFrequency = "100";
+  static const defaultChannelSpacing = "100";
+  static const defaultTxPower = "100";
   final kaonicMethodChannel =
       MethodChannel('network.beechat.app.kaonic/kaonic');
   final kaonicEventChannel =
@@ -53,8 +56,14 @@ class KaonicCommunicationService {
     });
   }
 
-  void sendConfig(int mcs, int optionNumber, int module, int frequency,
-      int channel, int channelSpacing, int txPower) {
+  void sendConfig(
+      {required int mcs,
+      required int optionNumber,
+      required int module,
+      required int frequency,
+      required int channel,
+      required int channelSpacing,
+      required int txPower}) {
     kaonicMethodChannel.invokeMethod('sendConfig', {
       "mcs": mcs,
       "optionNumber": optionNumber,
