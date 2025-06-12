@@ -15,11 +15,15 @@ class ChatService {
   late final KaonicCommunicationService _kaonicService;
 
   /// key is address of chat id
-  final _messagesSubject = BehaviorSubject<Map<String, List<KaonicEvent>>>();
+  final _messagesSubject =
+      BehaviorSubject<Map<String, List<KaonicEvent>>>.seeded({});
 
   /// key is contact address,
   /// value is chatUUID
   final _contactChats = <String, String>{};
+
+  String? _address;
+  String? _chatId;
 
   void _listenMessages() {
     _kaonicService.eventsStream
@@ -34,6 +38,7 @@ class ChatService {
         case KaonicEventType.MESSAGE_TEXT:
         case KaonicEventType.MESSAGE_FILE:
           _handleTextMessage(event);
+        // _handleFileMessage(event);
       }
     });
   }
@@ -52,19 +57,25 @@ class ChatService {
   }
 
   void sendTextMessage(String message, String address) async {
+    _address = address;
     _kaonicService.sendTextMessage(address, message);
   }
 
   void sendFileMessage(String filePath, String address) async {
-    _kaonicService.sendFileMessage(address, filePath);
+    _address = address;
+    final chatId = _contactChats[address];
+    if (chatId == null) throw Exception('chatId == null');
+
+    _kaonicService.sendFileMessage(address, filePath, chatId);
   }
 
   void _handleTextMessage(KaonicEvent message) {
-    final data = message.data as MessageTextEvent;
-    final chatId = data.chatId;
-
+    final data = message.data as MessageEvent;
+    final chatId = _address ?? data.address;
+    // final chatId = data.chatId;
+    _chatId = chatId;
     final currentMap =
-        Map<String, List<KaonicEvent>>.from(_messagesSubject.value);
+        Map<String, List<KaonicEvent>>.from(_messagesSubject.valueOrNull ?? {});
     final messageList = List<KaonicEvent>.from(currentMap[chatId] ?? []);
 
     final existingMessages = messageList

@@ -2,10 +2,12 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/services.dart';
+import 'package:kaonic/data/models/kaonic_new/kaonic_create_chat_event.dart';
 import 'package:kaonic/data/models/kaonic_new/kaonic_event.dart';
 import 'package:kaonic/data/models/kaonic_new/kaonic_event_type.dart';
 import 'package:kaonic/data/models/kaonic_new/kaonic_message_event.dart';
 import 'package:rxdart/subjects.dart';
+import 'package:uuid/uuid.dart';
 
 class KaonicCommunicationService {
   final kaonicMethodChannel =
@@ -25,8 +27,13 @@ class KaonicCommunicationService {
   }
 
   Future<String> createChat(String address) async {
-    return await kaonicMethodChannel
-        .invokeMethod('createChat', {"address": address});
+    final chatId = const Uuid().v4();
+    await kaonicMethodChannel.invokeMethod('createChat', {
+      "address": address,
+      "chatId": chatId,
+    });
+
+    return chatId;
   }
 
   void sendTextMessage(String address, String message) {
@@ -36,10 +43,11 @@ class KaonicCommunicationService {
     });
   }
 
-  void sendFileMessage(String address, String filePath) {
+  void sendFileMessage(String address, String filePath, String chatId) {
     kaonicMethodChannel.invokeMethod('sendFileMessage', {
       "address": address,
       "filePath": filePath,
+      "chatId": chatId,
     });
   }
 
@@ -62,6 +70,8 @@ class KaonicCommunicationService {
       if (!eventJson.containsKey('type')) return;
 
       final eventType = eventJson['type']?.toString() ?? '';
+
+      print('eventType $eventType');
 
       KaonicEvent? kaonicEvent;
       switch (eventType) {
@@ -91,6 +101,9 @@ class KaonicCommunicationService {
               eventJson,
               (json) =>
                   MessageFileEvent.fromJson(json as Map<String, dynamic>));
+        case KaonicEventType.CHAT_CREATE:
+          kaonicEvent = KaonicEvent<ChatCreateEvent>.fromJson(eventJson,
+              (json) => ChatCreateEvent.fromJson(json as Map<String, dynamic>));
       }
 
       if (kaonicEvent != null) {

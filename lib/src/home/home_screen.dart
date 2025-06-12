@@ -106,10 +106,10 @@ class HomeScreen extends StatelessWidget {
                                   itemBuilder: (context, index) => ContactItem(
                                       onTap: () {
                                         Navigator.of(context).pushNamed(
-                                            Routes.chat,
-                                            arguments: ChatArgs(
-                                                contact: state
-                                                    .user!.contacts[index]));
+                                          Routes.chat,
+                                          arguments: state
+                                              .user!.contacts[index].address,
+                                        );
                                       },
                                       onIdentifyTap: () {},
                                       contact: state.user!.contacts[index],

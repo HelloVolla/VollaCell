@@ -58,7 +58,8 @@ class _MainAppState extends State<MainApp> {
         designSize: designSize,
         child: MultiRepositoryProvider(
           providers: [
-            RepositoryProvider(create: (context) => _kaonicCommunicationService),
+            RepositoryProvider(
+                create: (context) => _kaonicCommunicationService),
             RepositoryProvider(create: (context) => _chatService),
             RepositoryProvider(create: (context) => _storageService),
             RepositoryProvider(create: (context) => _deviceService),
@@ -93,8 +94,8 @@ class _MainAppState extends State<MainApp> {
                 Routes.home: (context) => const HomeScreen(),
                 Routes.findNearby: (context) => const FindNearbyScreen(),
                 Routes.chat: (context) => ChatScreen(
-                      args: ModalRoute.of(context)?.settings.arguments
-                          as ChatArgs,
+                      address:
+                          ModalRoute.of(context)?.settings.arguments as String,
                     ),
                 Routes.call: (context) => const CallScreen(),
               }),
