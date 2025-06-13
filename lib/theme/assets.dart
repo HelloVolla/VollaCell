@@ -3,6 +3,8 @@ abstract class Assets {
   static const welcomeBg = '$_pref/welcome_bg.png';
   static const imageLogo = '$_pref/logo.png';
   static const imageWelcomeLogo = '$_pref/welcome_logo.png';
+  static const favicon = '$_pref/favicon.png';
+  static const holochainWhite = '$_pref/holochain-white.png';
 
   // Icons
   static const iconAdd = '$_pref/icon_add.svg';

@@ -16,14 +16,16 @@ class CircleButton extends StatelessWidget {
         customBorder: const CircleBorder(),
         onTap: onTap,
         child: Ink(
-          decoration: const BoxDecoration(
-            color: AppColors.grey1,
-            shape: BoxShape.circle,
-          ),
           width: 36,
           height: 36,
           child: Align(
-            child: SvgPicture.asset(icon),
+            child: SvgPicture.asset(
+              icon,
+              colorFilter: ColorFilter.mode(
+                AppColors.white,
+                BlendMode.srcIn,
+              ),
+            ),
           ),
         ),
       ),

@@ -24,12 +24,14 @@ class UserModel {
     String? username,
     String? passcode,
     bool? logged,
+    List<ContactModel>? contacts,
   }) {
     return UserModel(
-        username: username ?? this.username,
-        passcode: passcode ?? this.passcode,
-        logged: logged ?? this.logged,
-        key: key,
-        id: id);
+      username: username ?? this.username,
+      passcode: passcode ?? this.passcode,
+      logged: logged ?? this.logged,
+      key: key,
+      id: id,
+    );
   }
 }

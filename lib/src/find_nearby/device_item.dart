@@ -1,7 +1,5 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:kaonic/data/models/mesh_node.dart';
 import 'package:kaonic/generated/l10n.dart';
 import 'package:kaonic/theme/text_styles.dart';
 import 'package:kaonic/theme/theme.dart';
@@ -14,7 +12,7 @@ class DeviceItem extends StatelessWidget {
       this.onIdentifyTap,
       this.showAvailability = true});
 
-  final MeshNode device;
+  final String device;
   final Function() onTap;
   final Function()? onIdentifyTap;
   final bool showAvailability;
@@ -30,15 +28,17 @@ class DeviceItem extends StatelessWidget {
             flex: 2,
             child: DecoratedBox(
               decoration: BoxDecoration(
-                  gradient: AppColors.yellowGradient,
-                  borderRadius: BorderRadius.circular(42)),
+                // gradient: AppColors.yellowGradient,
+                color: AppColors.white,
+                borderRadius: BorderRadius.circular(42),
+              ),
               child: SizedBox(
                 height: 48,
                 child: Align(
                   child: Padding(
                     padding: EdgeInsets.symmetric(horizontal: 10.w),
                     child: Text(
-                      'User',
+                      S.of(context).user,
                       style: TextStyles.text18Bold,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -63,7 +63,7 @@ class DeviceItem extends StatelessWidget {
                     children: [
                       Flexible(
                         child: Text(
-                          device.address().toHex(),
+                          device,
                           style: TextStyles.text16
                               .copyWith(color: AppColors.grey5),
                           maxLines: 1,

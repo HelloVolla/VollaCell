@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class PasscodeWidget extends StatelessWidget {
-   PasscodeWidget({required this.onChanged, this.code, super.key});
+  PasscodeWidget({required this.onChanged, this.code, super.key});
   final String? code;
   final ValueChanged<String> onChanged;
 
@@ -96,7 +96,7 @@ class PasscodeWidget extends StatelessWidget {
           child: Center(
             child: Text(
               number,
-              style: TextStyles.text20.copyWith(color: AppColors.yellow),
+              style: TextStyles.text20.copyWith(color: AppColors.white),
             ),
           ),
         ),
@@ -108,16 +108,15 @@ class PasscodeWidget extends StatelessWidget {
         child: DecoratedBox(
             decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: filled ? AppColors.yellow : AppColors.grey4,
+          color: filled ? AppColors.white : AppColors.grey4,
         )),
       );
 
   Widget _erase() => InkWell(
         customBorder: const CircleBorder(),
         splashColor: AppColors.grey1,
-        onTap: () => onChanged(code?.isEmpty ?? true
-            ? ''
-            : code!.substring(0, code!.length - 1)),
+        onTap: () => onChanged(
+            code?.isEmpty ?? true ? '' : code!.substring(0, code!.length - 1)),
         child: SizedBox(
           width: keySize,
           height: keySize,
@@ -126,7 +125,7 @@ class PasscodeWidget extends StatelessWidget {
             children: [
               Icon(
                 Icons.backspace_outlined,
-                color: AppColors.yellow,
+                color: AppColors.white,
                 size: 20,
               ),
             ],

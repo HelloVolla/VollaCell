@@ -4,10 +4,10 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:kaonic/routes.dart';
 import 'package:kaonic/src/login/bloc/login_bloc.dart';
 import 'package:kaonic/src/widgets/back_button.dart';
-import 'package:kaonic/src/widgets/main_button.dart';
 import 'package:kaonic/src/widgets/main_text_field.dart';
-import 'package:kaonic/src/widgets/screen_container.dart';
+import 'package:kaonic/src/widgets/solid_button.dart';
 import 'package:kaonic/theme/text_styles.dart';
+import 'package:kaonic/theme/theme.dart';
 import 'package:kaonic/utils/snackbar_util.dart';
 
 import '../../generated/l10n.dart';
@@ -42,8 +42,8 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: ScreenContainer(
-          child: BlocProvider(
+      backgroundColor: AppColors.dark,
+      body: BlocProvider(
         create: (context) => _bloc,
         child: BlocListener<LoginBloc, LoginState>(
           listener: _listenStates,
@@ -71,6 +71,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         SizedBox(
                             width: MediaQuery.of(context).size.width * 0.85,
                             child: MainTextField(
+                              hint: S.of(context).enterUserName,
                               controller: usernameController,
                               onChange: (value) => _bloc
                                   .add(LoginInputsChanged(username: value)),
@@ -78,9 +79,10 @@ class _LoginScreenState extends State<LoginScreen> {
                       ],
                     ),
                     BlocBuilder<LoginBloc, LoginState>(
-                      builder: (context, state) => MainButton(
-                        label: S.of(context).login,
-                        onPressed: (state is LoginInitial
+                      builder: (context, state) => SolidButton(
+                        margin: EdgeInsets.symmetric(horizontal: 32),
+                        textButton: S.of(context).login,
+                        onTap: (state is LoginInitial
                                 ? state.btnEnabled
                                 : false)
                             ? () =>
@@ -94,7 +96,7 @@ class _LoginScreenState extends State<LoginScreen> {
             ],
           ),
         ),
-      )),
+      ),
     );
   }
 
