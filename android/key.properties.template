@@ -1,0 +1,8 @@
+# This file contains the keystore information for signing the Android app
+# Copy this file to android/key.properties and fill in your actual values
+# DO NOT commit the actual key.properties file with real values to version control
+
+storePassword=your_store_password_here
+keyPassword=your_key_password_here  
+keyAlias=your_key_alias_here
+storeFile=path_to_your_keystore.jks

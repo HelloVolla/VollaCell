@@ -1,0 +1,97 @@
+name: Build and Release
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  release:
+    types: [ created ]
+
+jobs:
+  build:
+    name: Build APK
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Set up Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+        
+    - name: Set up Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.24.3'
+        channel: 'stable'
+        cache: true
+        
+    - name: Get dependencies
+      run: flutter pub get
+      
+    - name: Generate code
+      run: |
+        flutter packages pub run build_runner build --delete-conflicting-outputs
+        flutter packages pub run intl_utils:generate
+        
+    - name: Run tests
+      run: flutter test
+      
+    - name: Get version from pubspec.yaml
+      id: get_version
+      run: |
+        VERSION=$(grep '^version:' pubspec.yaml | cut -d ' ' -f 2)
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "Version: $VERSION"
+        
+    - name: Build APK (Debug)
+      if: github.event_name != 'release'
+      run: flutter build apk --debug
+
+    - name: Setup Android signing
+      if: github.event_name == 'release'
+      run: |
+        echo "${{ secrets.ANDROID_KEYSTORE }}" | base64 --decode > android/app/keystore.jks
+        echo "storeFile=keystore.jks" >> android/key.properties
+        echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/key.properties
+        echo "storePassword=${{ secrets.STORE_PASSWORD }}" >> android/key.properties
+        echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> android/key.properties
+        
+    - name: Build APK (Release - Signed)
+      if: github.event_name == 'release'
+      run: flutter build apk --release
+      
+    - name: Rename APK files
+      run: |
+        VERSION="${{ steps.get_version.outputs.version }}"
+        if [ "${{ github.event_name }}" = "release" ]; then
+          if [ -f "build/app/outputs/flutter-apk/app-release.apk" ]; then
+            mv build/app/outputs/flutter-apk/app-release.apk build/app/outputs/flutter-apk/kaonic-v${VERSION}-release.apk
+          fi
+        else
+          if [ -f "build/app/outputs/flutter-apk/app-debug.apk" ]; then
+            mv build/app/outputs/flutter-apk/app-debug.apk build/app/outputs/flutter-apk/kaonic-v${VERSION}-debug.apk
+          fi
+        fi
+        
+    - name: Upload APK artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: kaonic-apk-${{ steps.get_version.outputs.version }}
+        path: build/app/outputs/flutter-apk/*.apk
+        retention-days: 30
+        
+    - name: Upload APK to release
+      if: github.event_name == 'release'
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: build/app/outputs/flutter-apk/kaonic-v${{ steps.get_version.outputs.version }}-release.apk
+        asset_name: kaonic-v${{ steps.get_version.outputs.version }}-release.apk
+        asset_content_type: application/vnd.android.package-archive
