@@ -71,6 +71,7 @@ jobs:
         retention-days: 30
         
     - name: Upload APK to release
+      if: github.event_name == 'release'
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
