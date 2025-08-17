@@ -44,13 +44,8 @@ jobs:
         VERSION=$(grep '^version:' pubspec.yaml | cut -d ' ' -f 2)
         echo "version=$VERSION" >> $GITHUB_OUTPUT
         echo "Version: $VERSION"
-        
-    - name: Build APK (Debug)
-      if: github.event_name != 'release'
-      run: flutter build apk --debug
 
     - name: Setup Android signing
-      if: github.event_name == 'release'
       run: |
         echo "${{ secrets.ANDROID_KEYSTORE }}" | base64 --decode > android/app/keystore.jks
         echo "storeFile=keystore.jks" >> android/key.properties
@@ -59,22 +54,15 @@ jobs:
         echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> android/key.properties
         
     - name: Build APK (Release - Signed)
-      if: github.event_name == 'release'
       run: flutter build apk --release
       
     - name: Rename APK files
       run: |
         VERSION="${{ steps.get_version.outputs.version }}"
-        if [ "${{ github.event_name }}" = "release" ]; then
-          if [ -f "build/app/outputs/flutter-apk/app-release.apk" ]; then
-            mv build/app/outputs/flutter-apk/app-release.apk build/app/outputs/flutter-apk/kaonic-v${VERSION}-release.apk
-          fi
-        else
-          if [ -f "build/app/outputs/flutter-apk/app-debug.apk" ]; then
-            mv build/app/outputs/flutter-apk/app-debug.apk build/app/outputs/flutter-apk/kaonic-v${VERSION}-debug.apk
-          fi
+        if [ -f "build/app/outputs/flutter-apk/app-release.apk" ]; then
+          mv build/app/outputs/flutter-apk/app-release.apk build/app/outputs/flutter-apk/kaonic-v${VERSION}-release.apk
         fi
-        
+
     - name: Upload APK artifact
       uses: actions/upload-artifact@v4
       with:
@@ -83,7 +71,6 @@ jobs:
         retention-days: 30
         
     - name: Upload APK to release
-      if: github.event_name == 'release'
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
