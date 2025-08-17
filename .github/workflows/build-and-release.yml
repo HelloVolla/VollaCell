@@ -3,6 +3,7 @@ name: Build and Release
 on:
   push:
     branches: [ main, develop ]
+    tags: [ 'v*' ]
   pull_request:
     branches: [ main ]
   release:
@@ -46,6 +47,7 @@ jobs:
         echo "Version: $VERSION"
 
     - name: Setup Android signing
+      if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'release'
       run: |
         echo "${{ secrets.ANDROID_KEYSTORE }}" | base64 --decode > android/app/keystore.jks
         echo "storeFile=keystore.jks" >> android/key.properties
@@ -55,6 +57,18 @@ jobs:
         
     - name: Build APK (Release - Signed)
       run: flutter build apk --release
+      
+    - name: Create Release
+      if: startsWith(github.ref, 'refs/tags/')
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref_name }}
+        release_name: VollaCell ${{ github.ref_name }}
+        draft: false
+        prerelease: false
       
     - name: Rename APK files
       run: |
@@ -71,12 +85,12 @@ jobs:
         retention-days: 30
         
     - name: Upload APK to release
-      if: github.event_name == 'release'
+      if: github.event_name == 'release' || startsWith(github.ref, 'refs/tags/')
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: ${{ github.event.release.upload_url }}
+        upload_url: ${{ github.event_name == 'release' && github.event.release.upload_url || steps.create_release.outputs.upload_url }}
         asset_path: build/app/outputs/flutter-apk/kaonic-v${{ steps.get_version.outputs.version }}-release.apk
         asset_name: kaonic-v${{ steps.get_version.outputs.version }}-release.apk
         asset_content_type: application/vnd.android.package-archive
