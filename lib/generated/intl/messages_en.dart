@@ -82,6 +82,6 @@ class MessageLookup extends MessageLookupByLibrary {
         "userExistError": MessageLookupByLibrary.simpleMessage(
             "User with this username is already exist"),
         "username": MessageLookupByLibrary.simpleMessage("Username"),
-        "volaMessenger": MessageLookupByLibrary.simpleMessage("Vola Messenger")
+        "vollaMessenger": MessageLookupByLibrary.simpleMessage("Volla Messenger")
       };
 }

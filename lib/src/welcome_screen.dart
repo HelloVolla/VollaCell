@@ -88,7 +88,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                 bottom: MediaQuery.of(context).size.height * 0.08,
               ),
               child: Text(
-                S.of(context).volaMessenger,
+                S.of(context).vollaMessenger,
                 textAlign: TextAlign.center,
                 style: TextStyles.text20Bold.copyWith(color: AppColors.white),
               ),

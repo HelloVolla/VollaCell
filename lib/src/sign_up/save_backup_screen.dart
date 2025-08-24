@@ -23,7 +23,7 @@ class SaveBackupScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                '${S.of(context).labelHelloTo} ${S.of(context).volaMessenger}!',
+                '${S.of(context).labelHelloTo} ${S.of(context).vollaMessenger}!',
                 textAlign: TextAlign.center,
                 style: TextStyles.text36Bold.copyWith(color: Colors.white),
               ),
